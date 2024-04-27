@@ -65,7 +65,11 @@ const start = async () => {
   app.use(
     "/graphql",
     cors({
-      origin: ["http://localhost:5173"],
+      origin: [
+        "http://localhost:5173",
+        "https://devlabblog.vercel.app",
+        "https://blog-dev-lab-git-main-douglas-projects-83bb388e.vercel.app/",
+      ],
       credentials: true,
     }),
     express.json(),
