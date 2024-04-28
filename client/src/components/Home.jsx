@@ -32,7 +32,7 @@ export default function Home() {
         ) : (
           <>
             <div className="flex flex-col gap-7 items-center">
-              <h2 className="text-3xl font-semibold text-base_03 font-comfortaa flex items-center gap-2">
+              <h2 className="text-3xl font-semibold text-base_03 flex items-center gap-2">
                 Postagens recentes <MdFiberNew className="text-5xl" />
               </h2>
 
@@ -46,8 +46,8 @@ export default function Home() {
               )}
               <hr className="bg-base_03 h-[0.15rem] px-[100%]" />
             </div>
-            <div className="bg-base_02 py-28 font-chivo text-base_03">
-              <h2 className="text-3xl font-medium text-base-03 text-center text-wrap my-5 font-chivo">
+            <div className="bg-base_02 py-28 text-base_03">
+              <h2 className="text-3xl font-medium text-base-03 text-center text-wrap my-5">
                 Explorando o Mundo da Codificação
               </h2>
               <p className="text-base-03 text-xl text-wrap mx-28 text-center font-light">
@@ -61,7 +61,7 @@ export default function Home() {
               <CategoryList uniqueCategories={uniqueCategories} />
             )}
 
-            <h2 className="text-center font-chivo mt-20">algumas postagens</h2>
+            <h2 className="text-center mt-20">algumas postagens</h2>
             {error ? (
               <h2 className="text-red-700 text-center p-5">
                 Problema no servidor, não foi possível carregar postagens, tente

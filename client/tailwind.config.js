@@ -12,9 +12,7 @@ export default {
         button_two: "#b5dead",
       },
       fontFamily: {
-        roboto: ["Roboto Flex", "sans-serif"],
-        comfortaa: ["Comfortaa", "sans-serif"],
-        chivo: ["Chivo", "sans-serif"],
+        space: ["Space Mono", "monospace"],
       },
     },
   },

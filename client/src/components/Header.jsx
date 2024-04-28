@@ -75,7 +75,7 @@ export default function Header() {
           onClick={toggleModal}
         >
           <div className="bg-white p-6 rounded-l-lg  h-full w-1/2 flex">
-            <ul className="flex flex-col gap-4 font-poppins text-xl w-full">
+            <ul className="flex flex-col gap-4 text-xl w-full">
               <li>
                 <Link to="/" className="hover:underline">
                   Home

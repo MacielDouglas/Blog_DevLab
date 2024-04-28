@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { PropTypes } from "prop-types";
 
 export default function CategoryList({ uniqueCategories }) {
   const containerRef = useRef(null);
@@ -36,7 +37,7 @@ export default function CategoryList({ uniqueCategories }) {
       <ul className="flex gap-7 justify-center flex-wrap my-10">
         {uniqueCategories?.map((cat) => (
           <li key={cat}>
-            <Link className="border font-medium border-base_03 py-2 px-4 md:py-3 md:px-6 uppercase bg-base_02 hover:bg-base_03 hover:text-base_02 font-roboto">
+            <Link className="border font-medium border-base_03 py-2 px-4 md:py-3 md:px-6 uppercase bg-base_02 hover:bg-base_03 hover:text-base_02">
               {cat}
             </Link>
           </li>
@@ -45,3 +46,7 @@ export default function CategoryList({ uniqueCategories }) {
     </div>
   );
 }
+
+CategoryList.propTypes = {
+  uniqueCategories: PropTypes.object.isRequired,
+};

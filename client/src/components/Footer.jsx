@@ -16,9 +16,9 @@ export default function Footer() {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-10 md:flex-row md:justify-between my-10 lg:mx-3 font-roboto">
+        <div className="flex flex-col gap-10 md:flex-row md:justify-between my-10 lg:mx-3">
           <div className="flex flex-col gap-2">
-            <p className="font-poppins font-medium">SOBRE</p>
+            <p className="font-medium">SOBRE</p>
             <Link
               to="https://macield.vercel.app/"
               target="_blank"
@@ -30,7 +30,7 @@ export default function Footer() {
           </div>
           <hr />
           <div>
-            <p className="font-poppins font-medium mb-2">SIGA-NOS</p>
+            <p className="font-medium mb-2">SIGA-NOS</p>
             <Link
               className="hover:text-base_01"
               to="https://github.com/MacielDouglas"
@@ -43,9 +43,7 @@ export default function Footer() {
           <hr />
 
           <div className="flex flex-col">
-            <p className="mb-2 font-poppins font-medium ">
-              CONHEÇA OUTROS PROJETOS{" "}
-            </p>
+            <p className="mb-2 font-medium ">CONHEÇA OUTROS PROJETOS </p>
             <div className="flex flex-col gap-2">
               <Link
                 to="https://imobiliaria-olinda.vercel.app/"
@@ -91,12 +89,7 @@ export default function Footer() {
               </Link>
             </p>
           </div>
-          <div className="hidden md:block">
-            <p className="text-center text-wrap">
-              About Films, is a fictional film information website. Study
-              project to apply the use of GraphQL.
-            </p>
-          </div>
+
           <div className="flex gap-4">
             <Link
               to="https://github.com/MacielDouglas"
