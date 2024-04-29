@@ -12,10 +12,15 @@ type Post {
 }
 
 type Query {
-    allPosts: [Post!]!
-    onePost(slug: String!): Post
-    filterPost(input: PostsInput!): [Post!]!
+    getPosts(slug: String, input: PostsInput): [Post!]!
 }
+
+
+# type Query {
+#     allPosts: [Post!]!
+#     onePost(slug: String!): Post
+#     filterPost(input: PostsInput!): [Post!]!
+# }
 
 type Mutation {
     createPost(newPost: NewPostInput!): Post

@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const ALL_POSTS = gql`
-  query allPosts {
-    allPosts {
+  query allPost {
+    getPosts {
       id
       title
       content
@@ -18,21 +18,16 @@ export const ALL_POSTS = gql`
 
 export const ONE_POST = gql`
   query onePost($slug: String!) {
-    onePost(slug: $slug) {
+    getPosts(slug: $slug) {
       id
       title
       content
       category
+      createdAt
       image
       slug
+      title
       userId
-      createdAt
-      comment {
-        content
-        id
-        likes
-        numberOfLikes
-      }
     }
   }
 `;

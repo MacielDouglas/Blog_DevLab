@@ -11,7 +11,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-base_01 text-base_03 h-30 w-full font-chivo ">
+    <header className="bg-base_01 text-base_03 h-30 w-full">
       <div className="sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-10 md:mx-auto pt-10 sm:pt-14 lg:pt-20 pb-4 flex items-end justify-between animate-slideon">
         <Link
           to="/"
@@ -34,15 +34,15 @@ export default function Header() {
       </div>
       <hr className="bg-base_03 h-[0.15rem]" />
 
-      <ul className="hidden sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-10 md:mx-auto sm:flex gap-12 text-lg font-light font-mono justify-start py-4 md:py-2 text-gray-600 animate-slidein">
+      <ul className="hidden sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-10 md:mx-auto sm:flex gap-12 text-lg font-light  justify-start py-4 md:py-2 text-gray-600 animate-slidein">
         <Link to="/">
-          <li className="hover:text-gray-900">home</li>
+          <li className="hover:text-gray-900 font-space">home</li>
         </Link>
         <Link to="/about">
-          <li className="hover:text-gray-900">sobre</li>
+          <li className="hover:text-gray-900 font-space">sobre</li>
         </Link>
         <Link to="/projects">
-          <li className="hover:text-gray-900">projetos</li>
+          <li className="hover:text-gray-900 font-space">projetos</li>
         </Link>
         <Link
           to="https://macield.vercel.app/"
@@ -50,7 +50,7 @@ export default function Header() {
           rel="noopener noreferrer"
           className="hover:text-base_01"
         >
-          <li className="hover:text-gray-900">portfólio</li>
+          <li className="hover:text-gray-900 font-space">portfólio</li>
         </Link>
       </ul>
 

@@ -5,53 +5,100 @@ import jwt from "jsonwebtoken";
 
 const postResolver = {
   Query: {
-    allPosts: async () => {
+    getPosts: async (_, { slug, input }) => {
       try {
-        const posts = await Post.find().exec();
-        return posts;
-      } catch (error) {
-        throw new Error(`Erro ao buscar todos os posts: ${error.message}`);
-      }
-    },
-    onePost: async (_, { slug }) => {
-      try {
-        const post = await Post.findOne({ slug }).exec();
-        if (!post) {
-          throw new Error("Post não encontrado.");
-        }
-        return post;
-      } catch (error) {
-        throw new Error(`Erro ao buscar o post: ${error.message}`);
-      }
-    },
-    filterPost: async (_, { input }) => {
-      try {
-        let filters = {}; // Inicializa um objeto vazio para os filtros
-        console.log(input);
-        // Verifica se há filtros de título e categoria fornecidos
-        if (input.filter) {
-          if (input.filter.title) {
-            // Adiciona filtro de título apenas se estiver presente
-            filters.title = { $regex: new RegExp(input.filter.title, "i") };
+        if (slug) {
+          const post = await Post.findOne({ slug }).exec();
+          if (!post) {
+            throw new Error("Post não encontrado.");
           }
-          if (input.filter.category) {
-            // Adiciona filtro de categoria apenas se estiver presente
-            filters.category = input.filter.category;
+          return [post];
+        } else if (input) {
+          const { category, author } = input.filter;
+          const query = {};
+          if (category) {
+            query.category = category;
           }
+          if (author) {
+            query.author = author;
+          }
+          console.log(query);
+          console.log(input);
+          const filteredPosts = await Post.find(query).exec();
+          return filteredPosts;
+        } else {
+          const posts = await Post.find().exec();
+          return posts;
         }
-
-        // Executa a consulta com os filtros
-        const posts = await Post.find(filters).exec();
-
-        return posts;
       } catch (error) {
-        console.error("Erro ao filtrar posts:", error.message);
-        throw new Error(
-          "Erro ao filtrar posts. Por favor, tente novamente mais tarde."
-        );
+        throw new Error(`Erro ao buscar os posts: ${error.message}`);
       }
     },
   },
+
+  // getPosts: async (_, { slug }) => {
+  //   try {
+  //     if (slug) {
+  //       const post = await Post.findOne({ slug }).exec();
+  //       if (!post) {
+  //         throw new Error("Post não encontrado.");
+  //       }
+  //       return [post];
+  //     } else {
+  //       const posts = await Post.find().exec();
+  //       return posts;
+  //     }
+  //   } catch (error) {
+  //     throw new Error(`Erro ao buscar os posts: ${error.message}`);
+  //   }
+  // },
+  // allPosts: async () => {
+  //   try {
+  //     const posts = await Post.find().exec();
+  //     return posts;
+  //   } catch (error) {
+  //     throw new Error(`Erro ao buscar todos os posts: ${error.message}`);
+  //   }
+  // },
+  // onePost: async (_, { slug }) => {
+  //   try {
+  //     const post = await Post.findOne({ slug }).exec();
+  //     if (!post) {
+  //       throw new Error("Post não encontrado.");
+  //     }
+  //     return post;
+  //   } catch (error) {
+  //     throw new Error(`Erro ao buscar o post: ${error.message}`);
+  //   }
+  // },
+  //   filterPost: async (_, { input }) => {
+  //     try {
+  //       let filters = {}; // Inicializa um objeto vazio para os filtros
+  //       console.log(input);
+  //       // Verifica se há filtros de título e categoria fornecidos
+  //       if (input.filter) {
+  //         if (input.filter.title) {
+  //           // Adiciona filtro de título apenas se estiver presente
+  //           filters.title = { $regex: new RegExp(input.filter.title, "i") };
+  //         }
+  //         if (input.filter.category) {
+  //           // Adiciona filtro de categoria apenas se estiver presente
+  //           filters.category = input.filter.category;
+  //         }
+  //       }
+
+  //       // Executa a consulta com os filtros
+  //       const posts = await Post.find(filters).exec();
+
+  //       return posts;
+  //     } catch (error) {
+  //       console.error("Erro ao filtrar posts:", error.message);
+  //       throw new Error(
+  //         "Erro ao filtrar posts. Por favor, tente novamente mais tarde."
+  //       );
+  //     }
+  //   },
+  // },
 
   //   Mutation: {
   //     createPost: async (_, { newPost }, { req }) => {
