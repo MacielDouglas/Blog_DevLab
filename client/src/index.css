@@ -17,13 +17,27 @@
 
 @keyframes slideon {
   from {
-    transform: translateY(-200%);
+    /* transform: translateY(-500%); */
+    transform: translateY(-100%);
   }
   to {
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 .animate-slideon {
   animation: slideon 0.7s ease-out;
+}
+
+@keyframes slideoff {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slideoff {
+  animation: slideoff 0.7s ease-in;
 }

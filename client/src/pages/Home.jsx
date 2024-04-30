@@ -1,13 +1,11 @@
 import { useQuery } from "@apollo/client";
-import { ALL_POSTS } from "../graphql/queries/post.query";
-import PostCard from "./PostCard";
-import CallToAction from "./CallToAction";
 import { Link } from "react-router-dom";
+import { ALL_POSTS } from "../graphql/queries/post.query";
+import PostCard from "./../components/PostCard";
+import CallToAction from "../components/CallToAction";
 
 export default function Home() {
   const { data, loading } = useQuery(ALL_POSTS);
-
-  console.log(data);
 
   if (loading) return <h1>Carregando...</h1>;
 

@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./components/Home";
+import Home from "./pages/Home";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import PostPage from "./components/PostPage";
+import PostPage from "./pages/PostPage";
 import ScrollToTop from "./components/ScrollToTop";
 
 export default function App() {
