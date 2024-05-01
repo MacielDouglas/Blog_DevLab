@@ -14,13 +14,13 @@ const postResolver = {
           }
           return [post];
         } else if (input) {
-          const { category, author } = input.filter;
+          const { category, title } = input.filter;
           const query = {};
           if (category) {
             query.category = category;
           }
-          if (author) {
-            query.author = author;
+          if (title) {
+            query.title = title;
           }
           console.log(query);
           console.log(input);

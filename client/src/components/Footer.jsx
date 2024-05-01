@@ -46,6 +46,14 @@ export default function Footer() {
             <p className="mb-2 font-medium ">CONHEÇA OUTROS PROJETOS </p>
             <div className="flex flex-col gap-2">
               <Link
+                to="https://aboutmovie.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-base_01"
+              >
+                About Movie
+              </Link>
+              <Link
                 to="https://imobiliaria-olinda.vercel.app/"
                 target="_blank"
                 rel="noopener noreferrer"
