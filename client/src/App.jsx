@@ -6,6 +6,7 @@ import PostPage from "./pages/PostPage";
 import ScrollToTop from "./components/ScrollToTop";
 import Search from "./pages/Search";
 import About from "./pages/About";
+import CreatePost from "./pages/CreatePost";
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/post/:postSlug" element={<PostPage />} />
         <Route path="/search" element={<Search />} />
         <Route path="/about" element={<About />} />
+        <Route path="/create-post" element={<CreatePost />} />
       </Routes>
       <Footer />
     </BrowserRouter>
