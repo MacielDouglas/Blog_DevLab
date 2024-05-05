@@ -1,6 +1,13 @@
 import { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "./../firebase";
 import { useNavigate } from "react-router-dom";
 
 export default function CreatePost() {
@@ -12,11 +19,50 @@ export default function CreatePost() {
   const navigate = useNavigate();
 
   const handleUploadImage = async () => {
-    console.log("Upload Image");
+    try {
+      if (!file) {
+        setImageUploadError("Por favor adicione uma imagem.");
+        return;
+      }
+      setImageUploadError(null);
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + "_" + file.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setImageUploadProgress(progress.toFixed(0));
+        },
+        (error) => {
+          setImageUploadError("Falha no envio da imagem.");
+          setImageUploadProgress(null);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
+            setImageUploadProgress(null);
+            setImageUploadError(null);
+            setFormData({ ...formData, image: downloadUrl });
+          });
+        }
+      );
+    } catch (error) {
+      setImageUploadError("Falha ao carregar a imagem.");
+      setImageUploadProgress(null);
+      console.log(error);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("submetido");
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   return (
@@ -37,16 +83,54 @@ export default function CreatePost() {
               setFormData({ ...formData, title: e.target.value })
             }
           />
-          <select
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
-          >
-            <option value="uncategorized">Selecione uma categoria</option>
-            <option value="javascript">JavaScript</option>
-            <option value="reactjs">React JS</option>
-            <option value="nextjs">Next JS</option>
-          </select>
+          <div className="flex flex-row gap-4 flex-wrap">
+            <label>
+              <input
+                type="radio"
+                name="category"
+                value="javascript"
+                checked={formData.category === "javascript"}
+                onChange={handleChange}
+              />
+              JavaScript
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="category"
+                value="reactjs"
+                checked={formData.category === "reactjs"}
+                onChange={handleChange}
+              />
+              React JS
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="category"
+                value="nextjs"
+                checked={formData.category === "nextjs"}
+                onChange={handleChange}
+              />
+              Next JS
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="category"
+                value="custom"
+                checked={formData.category === "custom"}
+                onChange={handleChange}
+              />
+              Custom:
+              <input
+                type="text"
+                name="customCategory"
+                value={formData.customCategory}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
         </div>
         {/* Input para selecionar a imagem */}
         <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">

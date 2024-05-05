@@ -25,9 +25,9 @@ export default function Header() {
         </Link>
         <div className="hidden sm:block">
           {/* <button className="mr-5">ENTRAR</button> */}
-          <button className="flex items-center gap-1">
+          <Link to="/login" className="flex items-center gap-1">
             LOGIN <MdLogin className="text-2xl" />
-          </button>
+          </Link>
         </div>
         <div className="sm:hidden">
           <button onClick={toggleModal}>
@@ -89,7 +89,7 @@ export default function Header() {
               </li>
               <hr />
               <li>
-                <Link to="/projects" className="hover:underline">
+                <Link to="/login" className="hover:underline">
                   LOGIN
                 </Link>
               </li>
