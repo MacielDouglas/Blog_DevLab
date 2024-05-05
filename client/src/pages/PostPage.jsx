@@ -6,13 +6,11 @@ import CallToAction from "../components/CallToAction";
 
 export default function PostPage() {
   const { postSlug } = useParams();
-  console.log(postSlug);
   const { data, loading } = useQuery(ONE_POST, {
     variables: {
       slug: postSlug,
     },
   });
-  console.log("OnePost", data);
 
   const getMonthName = (month) => {
     const months = [

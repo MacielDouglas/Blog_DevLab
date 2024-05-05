@@ -33,16 +33,17 @@ export const ONE_POST = gql`
 `;
 
 export const FILTER_POST = gql`
-  query FilterPost($input: PostsInput!) {
-    filterPost(input: $input) {
+  query searchPost($input: PostFilters!) {
+    getPosts(input: $input) {
       id
       title
       content
       category
+      createdAt
       image
       slug
+      title
       userId
-      createdAt
     }
   }
 `;

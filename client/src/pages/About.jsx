@@ -1,9 +1,7 @@
-import React from "react";
-
 export default function About() {
   return (
     <main className="py-20 px-4 max-w-6xl mx-auto mb-32">
-      <h1 className="text-7xl text-center font-bold mb-10  text-stone-600">
+      <h1 className="text-7xl text-center font-bold mb-10  text-stone-800">
         DevLab, blog
       </h1>
       <div>

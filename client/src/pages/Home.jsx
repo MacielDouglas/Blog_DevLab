@@ -3,15 +3,22 @@ import { Link } from "react-router-dom";
 import { ALL_POSTS } from "../graphql/queries/post.query";
 import PostCard from "./../components/PostCard";
 import CallToAction from "../components/CallToAction";
+import CategoryList from "./../components/CategoryList";
 
 export default function Home() {
   const { data, loading } = useQuery(ALL_POSTS);
+
+  const uniqueCategories = [
+    ...new Set(data?.getPosts.map((item) => item.category)),
+  ];
+  // console.log(unico);
 
   if (loading) return <h1>Carregando...</h1>;
 
   return (
     <>
       <div className="rounded-lg mt-2 bg-base_01">
+        <CategoryList uniqueCategories={uniqueCategories} />
         <div className="bg-base_02 py-28 text-base_03">
           <h1 className="text-3xl font-medium text-base-03 text-center text-wrap my-5">
             Explorando o Mundo da Codificação

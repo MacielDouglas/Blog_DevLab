@@ -1,16 +1,34 @@
 import { useState } from "react";
 import PostCard from "../components/PostCard";
+import { useLazyQuery } from "@apollo/client";
+import { useLocation } from "react-router-dom";
+import { FILTER_POST } from "./../graphql/queries/post.query";
+import useEffectOnce from "./../hooks/useEffectOnce";
+import RecentPost from "./../components/RecentPost";
 
 export default function Search() {
-  const [sidebarData, setSidebarData] = useState({
-    searchTerm: "",
-    sort: "desc",
-    category: "unCategorized",
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search)
+    .toString()
+    .split("=");
+  const category = { [queryParams[0]]: queryParams[1] };
+
+  const [searchData, { data, loading, error }] = useLazyQuery(FILTER_POST);
+  console.log(data);
+
+  useEffectOnce(() => {
+    searchData({ variables: sidebarData });
   });
+
+  const [sidebarData, setSidebarData] = useState({
+    input: {
+      title: "",
+      category: category.category || "",
+    },
+  });
+
   const [posts, setPosts] = useState([]);
   const [showMore, setShowMore] = useState(false);
-  const data = 0;
-  const loading = true;
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -25,8 +43,21 @@ export default function Search() {
   const handleShowMore = async () => {
     console.log("ÉEEEEEE.");
   };
+  const recentPosts = data?.getPosts;
+  if (recentPosts === undefined) return <h1>Carregando...</h1>;
+  console.log(recentPosts);
+
   return (
     <div className="container mx-auto px-4 text-base_03 mt-10">
+      <h1 className="text-center capitalize text-5xl font-bold my-5 md:my-0">
+        {category.category}
+      </h1>
+      <div>
+        <h2 className="p-4 text-lg font-semibold text-stone-600">
+          Postagens encontradas:{" "}
+        </h2>
+        <RecentPost recentPosts={recentPosts} />
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:border-r border-gray-500 pb-4">
           <form className="space-y-4 mr-5" onSubmit={handleSubmit}>

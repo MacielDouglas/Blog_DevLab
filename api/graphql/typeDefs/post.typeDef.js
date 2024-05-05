@@ -12,8 +12,11 @@ type Post {
 }
 
 type Query {
-    getPosts(slug: String, input: PostsInput): [Post!]!
+    getPosts(slug: String, input: PostFilters): [Post!]!
 }
+# type Query {
+#     getPosts(slug: String, input: PostsInput): [Post!]!
+# }
 
 
 # type Query {
@@ -64,9 +67,9 @@ input PostFilters {
   category: String
 }
 
-input PostsInput {
-  filter: PostFilters
-}
+# input PostsInput {
+#   filter: PostFilters
+# }
 
 
 `;

@@ -7,6 +7,7 @@ const postResolver = {
   Query: {
     getPosts: async (_, { slug, input }) => {
       try {
+        console.log("Input", input);
         if (slug) {
           const post = await Post.findOne({ slug }).exec();
           if (!post) {
@@ -14,16 +15,14 @@ const postResolver = {
           }
           return [post];
         } else if (input) {
-          const { category, title } = input.filter;
+          const { category, title } = input;
           const query = {};
           if (category) {
             query.category = category;
           }
           if (title) {
-            query.title = title;
+            query.title = { $regex: title, $options: "i" };
           }
-          console.log(query);
-          console.log(input);
           const filteredPosts = await Post.find(query).exec();
           return filteredPosts;
         } else {

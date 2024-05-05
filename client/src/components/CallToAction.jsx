@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import macield from "../assets/macield.png";
 
 export default function CallToAction() {
   return (
@@ -21,7 +22,7 @@ export default function CallToAction() {
       <div className="p-7 flex-1">
         <img
           className="w-[500px] h-[350px] object-scale-down"
-          src="../../public/macield.png"
+          src={macield}
           alt=""
         />
       </div>
