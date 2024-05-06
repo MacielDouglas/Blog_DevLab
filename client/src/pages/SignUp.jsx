@@ -22,7 +22,7 @@ export default function SignUp() {
   return (
     <div className="min-h-screen mt-20 pb-10">
       <div className="p-14 mx-auto sm:mx-auto max-w-96 sm:max-w-xl md:max-w-2xl lg:max-w-3xl bg-stone-50 rounded-2xl shadow-2xl ">
-        <h1 className="text-center mb-8 text-2xl font-bold">Cadastre-Se</h1>
+        <h1 className="text-center mb-8 text-3xl font-bold">Cadastre-Se</h1>
         <div className="flex flex-col  md:flex-row md:items-center gap-5">
           <div className="flex-1">
             <h2 className="font-semibold text-2xl">DevLab, blog</h2>
