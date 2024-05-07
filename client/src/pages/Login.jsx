@@ -1,21 +1,37 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/AuthProvider";
 
 export default function Login() {
+  const { signIn, isLoggedIn, loading, error } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  console.log("IsLoggin: ", isLoggedIn);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aqui você pode adicionar a lógica para autenticar o usuário com os dados do formulário
+    try {
+      await signIn({ variables: formData });
+    } catch (error) {
+      console.error("Erro ao fazer login: ", error);
+    }
   };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/");
+    }
+  }, [isLoggedIn, navigate]);
+  console.log("Error no login: ", error);
 
   return (
     <div className="min-h-screen mt-20 pb-10">
@@ -71,13 +87,21 @@ export default function Login() {
               </div>
               <button
                 type="submit"
-                className="bg-base_03 text-white rounded-md py-2 px-4 hover:bg-stone-700 focus:outline-none focus:bg-blue-600"
+                className="bg-base_03 text-white rounded-md py-2 px-4 hover:bg-stone-700 focus:outline-none focus:bg-blue-600 disabled:bg-stone-600"
+                disabled={loading}
               >
-                Entrar
+                {loading ? "Loading..." : "Entrar"}
               </button>
             </form>
           </div>
         </div>
+        {error ? (
+          <p className="text-center pt-3 -mb-4 font-semibold text-red-700">
+            {error.message}
+          </p>
+        ) : (
+          <></>
+        )}
         <div className="flex flex-col gap-2 text-sm mt-10 sm:flex-row">
           <p>Ainda não tem uma conta?</p>
           <Link
