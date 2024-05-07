@@ -60,6 +60,94 @@ const userResolver = {
       }
     },
   },
+
+  Mutation: {
+    createUser: async (_, { user }) => {
+      try {
+        const existingEmail = await User.findOne({ email: user.email });
+        if (existingEmail)
+          throw new Error(
+            `Este email está em uso. Por favor, use outro email.`
+          );
+
+        const existingUsername = await User.findOne({
+          username: user.username,
+        });
+        if (existingUsername)
+          throw new Error(
+            `Este usuário está em uso. Por favor escolha outro nome de usuário.`
+          );
+
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        const newUser = new User({ ...user, password: hashedPassword });
+        await newUser.save();
+        return newUser;
+      } catch (error) {
+        throw new Error(`Erro ao criar usuário: ${error.message}`);
+      }
+    },
+    deleteUser: async (_, { id }) => {
+      try {
+        const existingUser = await User.findById(id);
+        if (!existingUser) throw new Error("Usuário não encontrado.");
+
+        // Se o usuário existe, excluí-lo
+        await User.findByIdAndDelete(id);
+        return {
+          success: true,
+          message: `Usuário: ${existingUser.username}, foi excluído com sucesso.`,
+        };
+      } catch (error) {
+        throw new Error(`Erro ao excluir usuário: ${error.message}`);
+      }
+    },
+
+    updateUser: async (_, { id, updatedUser }) => {
+      try {
+        const existingUser = await User.findById(id);
+        if (!existingUser) throw new Error("Usuário não encontrado.");
+
+        const userUpdate = {};
+        const { username, email, password, profilePicture } = updatedUser;
+
+        if (password && password.trim() !== "") {
+          const hashedPassword = await bcrypt.hash(updatedUser.password, 10);
+          userUpdate.password = hashedPassword;
+        } else {
+          userUpdate.password = existingUser.password;
+        }
+
+        if (username && username.trim() !== "") {
+          userUpdate.username = username;
+        } else {
+          userUpdate.username = existingUser.username;
+        }
+
+        if (email && email.trim() !== "") {
+          userUpdate.email = email;
+        } else {
+          userUpdate.email = existingUser.email;
+        }
+        if (profilePicture && profilePicture.trim() !== "") {
+          userUpdate.profilePicture = profilePicture;
+        } else {
+          userUpdate.profilePicture = existingUser.profilePicture;
+        }
+        const novo = await User.findByIdAndUpdate(id, userUpdate);
+
+        return {
+          username: novo.username,
+          email: novo.email,
+          isAdmin: novo.isAdmin,
+          password: novo.password,
+          success: true,
+          message: "Usuário atualizado com sucesso.",
+        };
+      } catch (error) {
+        throw new Error(`Erro ao atualizar usuário: ${error.message}`);
+      }
+    },
+  },
 };
 
 export default userResolver;
