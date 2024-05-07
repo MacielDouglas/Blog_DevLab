@@ -30,7 +30,6 @@ const userResolver = {
             expiresIn: "1h",
           }
         );
-        console.log("Token: ", token);
         const { password: _, ...userWithoutPassword } = user._doc;
         res.cookie("access_token", token, {
           httpOnly: true,
@@ -86,13 +85,35 @@ const userResolver = {
         throw new Error(`Erro ao criar usuário: ${error.message}`);
       }
     },
-    deleteUser: async (_, { id }) => {
-      try {
-        const existingUser = await User.findById(id);
-        if (!existingUser) throw new Error("Usuário não encontrado.");
 
-        // Se o usuário existe, excluí-lo
+    deleteUser: async (_, { id }, { req }) => {
+      try {
+        const authorizationHeader = req.headers["authorization"];
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
+        }
+
+        // const token = authorizationHeader.split(" ")[1];
+        const token = authorizationHeader;
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
+        }
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (
+          !decodedToken ||
+          decodedToken.userId !== id ||
+          !decodedToken.isAdmin
+        ) {
+          throw new Error("Você não tem permissão para excluir este usuário.");
+        }
+
+        const existingUser = await User.findById(id);
+        if (!existingUser) {
+          throw new Error("Usuário não encontrado.");
+        }
         await User.findByIdAndDelete(id);
+
         return {
           success: true,
           message: `Usuário: ${existingUser.username}, foi excluído com sucesso.`,
@@ -102,10 +123,26 @@ const userResolver = {
       }
     },
 
-    updateUser: async (_, { id, updatedUser }) => {
+    updateUser: async (_, { id, updatedUser }, { req }) => {
       try {
+        const authorizationHeader = req.headers["authorization"];
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
+        }
+
+        // const token = authorizationHeader.split(" ")[1];
+        const token = authorizationHeader;
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
+        }
+
         const existingUser = await User.findById(id);
         if (!existingUser) throw new Error("Usuário não encontrado.");
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken || decodedToken.userId !== existingUser.id) {
+          throw new Error("Você não tem permissão para alterar este usuário.");
+        }
 
         const userUpdate = {};
         const { username, email, password, profilePicture } = updatedUser;

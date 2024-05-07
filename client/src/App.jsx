@@ -9,6 +9,8 @@ import About from "./pages/About";
 import CreatePost from "./pages/CreatePost";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import Profile from "./pages/Profile";
+import PrivateRoute from "./components/PrivateRoute";
 
 export default function App() {
   return (
@@ -19,6 +21,10 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route element={<PrivateRoute />}>
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+
         <Route path="/post/:postSlug" element={<PostPage />} />
         <Route path="/search" element={<Search />} />
         <Route path="/about" element={<About />} />

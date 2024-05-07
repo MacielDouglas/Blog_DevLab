@@ -6,13 +6,26 @@ import {
   MdMenu,
   MdLogout,
   MdAdminPanelSettings,
+  MdAutoStories,
+  MdLightbulbOutline,
+  MdOutlineDashboard,
 } from "react-icons/md";
 import { FaRegCircleUser } from "react-icons/fa6";
+import { IoHomeOutline } from "react-icons/io5";
 import { useAuth } from "../hooks/AuthProvider";
 
 export default function Header() {
   const { user, logOff } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  const handleMouseEnter = () => {
+    setShowMenu(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowMenu(false);
+  };
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -28,35 +41,53 @@ export default function Header() {
           <TbCodeDots className="text-4xl md:text-6xl" />
           <p className="text-2xl md:text-4xl lg:text-6xl">DevLab, blog</p>
         </Link>
-        <div className="hidden sm:block">
-          {/* <button className="mr-5">ENTRAR</button> */}
+        <div className="relative">
           {user ? (
-            <div className="flex items-center gap-1">
-              <p className="flex items-center gap-1">
+            <div className="sm:flex items-center gap-1 cursor-pointer hidden">
+              <div
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                className="relative flex items-center gap-2"
+              >
                 {user.isAdmin ? (
                   <MdAdminPanelSettings className="text-2xl" />
                 ) : (
                   <FaRegCircleUser className="text-2xl" />
                 )}
-
-                <span className="font-semibold">{user.username},</span>
-              </p>
-              <button
-                onClick={logOff}
-                className="flex items-center gap-1 hover:text-red-500"
-              >
-                Sair <MdLogout className="text-2xl" />
-              </button>
+                <span className="font-semibold">{user.username}</span>
+                {showMenu && (
+                  <div
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    className="absolute top-full right-0 bg-white shadow-md py-2 w-48 rounded-2xl "
+                  >
+                    <div className="px-4 py-2">
+                      <Link to="/profile" className="text-gray-600">
+                        @{user.username}
+                      </Link>
+                      {/* <p className="text-sm text-gray-400">{user.email}</p> */}
+                    </div>
+                    <hr className="border-gray-200" />
+                    <button
+                      onClick={logOff}
+                      className="block px-4 py-2 text-sm text-red-500 hover:text-red-700 w-full text-left"
+                    >
+                      Sair <MdLogout className="text-xl inline-block" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <Link
               to="/login"
-              className="flex items-center gap-1  hover:text-stone-500"
+              className="sm:flex items-center gap-1  hover:text-blue-600 hidden"
             >
               LOGIN <MdLogin className="text-2xl" />
             </Link>
           )}
         </div>
+
         <div className="sm:hidden">
           <button onClick={toggleModal}>
             <MdMenu className="text-4xl" />
@@ -93,32 +124,45 @@ export default function Header() {
           <div className="bg-white p-6 rounded-l-lg  h-full w-1/2 flex">
             <ul className="flex flex-col gap-4 text-xl w-full">
               <li>
-                <Link to="/" className="hover:underline">
-                  Home
+                <Link to="/" className="hover:underline flex justify-between">
+                  Home <IoHomeOutline className="text-2xl" />
                 </Link>
               </li>
               <hr />
               <li>
-                <Link to="/about" className="hover:underline">
-                  Sobre
+                <Link
+                  to="/about"
+                  className="hover:underline flex justify-between"
+                >
+                  Sobre <MdAutoStories className="text-2xl" />
                 </Link>
               </li>
               <hr />
               <li>
-                <Link to="/projects" className="hover:underline">
-                  Projetos
+                <Link
+                  to="/projects"
+                  className="hover:underline flex justify-between"
+                >
+                  Projetos <MdLightbulbOutline className="text-2xl" />
                 </Link>
               </li>
               <hr />
               <li>
-                <Link to="/projects" className="hover:underline">
-                  ENTRAR
+                <Link
+                  to="/projects"
+                  className="hover:underline flex justify-between hover:text-black"
+                >
+                  Portfólio <MdOutlineDashboard className="text-2xl" />
                 </Link>
               </li>
+
               <hr />
               <li>
-                <Link to="/login" className="hover:underline">
-                  LOGIN
+                <Link
+                  to="/login"
+                  className="hover:underline flex justify-between"
+                >
+                  LOGIN <MdLogin className="text-2xl" />
                 </Link>
               </li>
               <hr />

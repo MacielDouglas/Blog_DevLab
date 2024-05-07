@@ -38,7 +38,7 @@ input NewUserInput {
     username: String!
     email: String!
     password: String!
-    profilePicture: String!
+    profilePicture: String
     isAdmin: Boolean
 }
 

@@ -9,7 +9,6 @@ export default function Login() {
     password: "",
   });
 
-  console.log("IsLoggin: ", isLoggedIn);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -31,7 +30,6 @@ export default function Login() {
       navigate("/");
     }
   }, [isLoggedIn, navigate]);
-  console.log("Error no login: ", error);
 
   return (
     <div className="min-h-screen mt-20 pb-10">

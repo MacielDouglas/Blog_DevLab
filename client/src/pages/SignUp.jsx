@@ -1,22 +1,42 @@
+import { useMutation } from "@apollo/client";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { NEW_USER } from "../graphql/mutation/user.mutation";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
-    user: "",
+    username: "",
     email: "",
     password: "",
   });
+
+  const [newUser, { loading, data }] = useMutation(NEW_USER);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  console.log(formData);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aqui você pode adicionar a lógica para autenticar o usuário com os dados do formulário
+
+    if (!formData.username || !formData.email || !formData.password) {
+      return console.error("Por favor, preencha todos os campos.");
+    }
+
+    try {
+      await newUser({
+        variables: {
+          user: formData,
+        },
+      });
+
+      setFormData({ username: "", email: "", password: "" });
+      navigate("/login");
+    } catch (error) {
+      console.error("Error: ", error);
+    }
   };
 
   return (
@@ -36,17 +56,17 @@ export default function SignUp() {
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
               <div className="flex flex-col">
                 <label
-                  htmlFor="user"
+                  htmlFor="username"
                   className="text-gray-600 font-medium text-sm"
                 >
                   Usuário
                 </label>
                 <input
                   type="text"
-                  id="user"
-                  name="user"
+                  id="username"
+                  name="username"
                   placeholder="fulano"
-                  value={formData.user}
+                  value={formData.username}
                   onChange={handleChange}
                   className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"
                   required
@@ -91,9 +111,9 @@ export default function SignUp() {
               </div>
               <button
                 type="submit"
-                className="bg-base_03 text-white rounded-md py-2 px-4 hover:bg-stone-700 focus:outline-none focus:bg-blue-600"
+                className="bg-base_03 text-white rounded-md py-2 px-4 hover:bg-stone-700 focus:outline-none focus:bg-stone-900"
               >
-                Cadastrar
+                {loading ? "Cadastrando..." : "Cadastrar"}
               </button>
             </form>
           </div>
