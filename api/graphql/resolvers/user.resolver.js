@@ -31,6 +31,7 @@ const userResolver = {
           }
         );
         const { password: _, ...userWithoutPassword } = user._doc;
+
         res.cookie("access_token", token, {
           httpOnly: true,
         });
@@ -88,23 +89,19 @@ const userResolver = {
 
     deleteUser: async (_, { id }, { req }) => {
       try {
-        const authorizationHeader = req.headers["authorization"];
+        const authorizationHeader = req.headers.cookie;
         if (!authorizationHeader) {
           throw new Error("Token de autorização não fornecido.");
         }
 
         // const token = authorizationHeader.split(" ")[1];
-        const token = authorizationHeader;
+        const token = authorizationHeader.split("=")[1];
         if (!token) {
           throw new Error("Token de autorização inválido.");
         }
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        if (
-          !decodedToken ||
-          decodedToken.userId !== id ||
-          !decodedToken.isAdmin
-        ) {
+        if (!decodedToken || decodedToken.userId !== id) {
           throw new Error("Você não tem permissão para excluir este usuário.");
         }
 
@@ -124,14 +121,16 @@ const userResolver = {
     },
 
     updateUser: async (_, { id, updatedUser }, { req }) => {
+      console.log("iniciado");
       try {
-        const authorizationHeader = req.headers["authorization"];
+        const authorizationHeader = req.headers.cookie;
+
         if (!authorizationHeader) {
           throw new Error("Token de autorização não fornecido.");
         }
 
-        // const token = authorizationHeader.split(" ")[1];
-        const token = authorizationHeader;
+        const token = authorizationHeader.split("=")[1];
+        console.log("TOKENS: ", token);
         if (!token) {
           throw new Error("Token de autorização inválido.");
         }
@@ -171,6 +170,7 @@ const userResolver = {
           userUpdate.profilePicture = existingUser.profilePicture;
         }
         const novo = await User.findByIdAndUpdate(id, userUpdate);
+        console.log("NOVO: ", novo);
 
         return {
           username: novo.username,

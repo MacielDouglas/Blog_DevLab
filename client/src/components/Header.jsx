@@ -9,6 +9,7 @@ import {
   MdAutoStories,
   MdLightbulbOutline,
   MdOutlineDashboard,
+  MdPermIdentity,
 } from "react-icons/md";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { IoHomeOutline } from "react-icons/io5";
@@ -63,9 +64,8 @@ export default function Header() {
                   >
                     <div className="px-4 py-2">
                       <Link to="/profile" className="text-gray-600">
-                        @{user.username}
+                        Perfil do {user.username}
                       </Link>
-                      {/* <p className="text-sm text-gray-400">{user.email}</p> */}
                     </div>
                     <hr className="border-gray-200" />
                     <button
@@ -121,7 +121,7 @@ export default function Header() {
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex  justify-end"
           onClick={toggleModal}
         >
-          <div className="bg-white p-6 rounded-l-lg  h-full w-1/2 flex">
+          <div className="bg-white p-6 rounded-l-lg  h-full w-2/3 flex">
             <ul className="flex flex-col gap-4 text-xl w-full">
               <li>
                 <Link to="/" className="hover:underline flex justify-between">
@@ -155,15 +155,41 @@ export default function Header() {
                   Portfólio <MdOutlineDashboard className="text-2xl" />
                 </Link>
               </li>
+              {user ? (
+                <>
+                  <hr />
+                  <li>
+                    <Link
+                      to="/profile"
+                      className="hover:underline flex justify-between hover:text-black"
+                    >
+                      Perfil do {user.username}{" "}
+                      <MdPermIdentity className="text-2xl" />
+                    </Link>
+                    {/* <p className="text-sm text-gray-400">{user.email}</p> */}
+                  </li>
+                </>
+              ) : (
+                <></>
+              )}
 
               <hr />
               <li>
-                <Link
-                  to="/login"
-                  className="hover:underline flex justify-between"
-                >
-                  LOGIN <MdLogin className="text-2xl" />
-                </Link>
+                {user ? (
+                  <button
+                    onClick={logOff}
+                    className="text-red-500 hover:text-red-700 w-full text-left flex justify-between"
+                  >
+                    SAIR <MdLogout className="text-2xl inline-block" />
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="hover:underline flex justify-between"
+                  >
+                    LOGIN <MdLogin className="text-2xl" />
+                  </Link>
+                )}
               </li>
               <hr />
             </ul>

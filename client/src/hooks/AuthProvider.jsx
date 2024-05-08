@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
         username: data.loginUser.username,
         isAdmin: data.loginUser.isAdmin,
         profilePicture: data.loginUser.profilePicture,
+        id: data.loginUser.id,
       });
     }
   }, [loading, error, data]);

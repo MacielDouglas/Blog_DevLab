@@ -1,9 +1,152 @@
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/AuthProvider";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "./../firebase";
+import { CircularProgressbar } from "react-circular-progressbar";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
+import { useMutation } from "@apollo/client";
+import { DELETE_USER, UPDATE_USER } from "../graphql/mutation/user.mutation";
+
 export default function Profile() {
+  const { user, logOff } = useAuth();
+  const [updateUser, { loading, data }] = useMutation(UPDATE_USER);
+  const [id] = useMutation(DELETE_USER);
+
+  const [formState, setFormState] = useState({
+    username: user.username,
+    password: "",
+    profilePicture: user.profilePicture,
+  });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imageFileUrl, setImageFileUrl] = useState(null);
+  const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
+  const [imageFileUploadError, setImageFileUploadError] = useState(null);
+  const [imageFileUploading, setImageFileUploading] = useState(false);
+
+  // Estados para mensagens de sucesso e erro durante a atualização do usuário e modal
+  const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
+  const [updateUserError, setUpdateUserError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+
+  const filePickerRef = useRef();
+
+  useEffect(() => {
+    if (imageFile) {
+      uploadImage();
+    }
+  }, [imageFile]);
+
   const handleImageChange = (e) => {
-    console.log("IMAGE");
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImageFileUrl(URL.createObjectURL(file));
+    }
   };
-  const handleSubmit = (e) => {
+
+  // Função para upload da imagem para o Firebase Storage
+  const uploadImage = async () => {
+    setImageFileUploading(true);
+    setImageFileUploadError(null);
+    const storage = getStorage(app);
+    const fileName = new Date().getTime() + imageFile.name;
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, imageFile);
+
+    // Evento para acompanhar o progresso do upload
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setImageFileUploadProgress(progress.toFixed(0));
+      },
+      (error) => {
+        setImageFileUploadError(
+          "Não foi possível fazer upload da imagem (o arquivo deve ter menos de 2 MB)"
+        );
+        setImageFileUploadProgress(null);
+        setImageFile(null);
+        setImageFileUrl(null);
+        setImageFileUploading(false);
+      },
+      () => {
+        // Upload concluído com sucesso
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
+          setImageFileUrl(downloadUrl);
+          setImageFileUploadProgress(100);
+          setImageFileUploading(false);
+          setFormState({ ...formState, profilePicture: downloadUrl });
+        });
+      }
+    );
+  };
+
+  const handleChange = (e) => {
+    setFormState({
+      ...formState,
+      [e.target.id]: e.target.value,
+    });
+  };
+
+  // Função para lidar com o envio do formulário de atualização do usuário
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setUpdateUserError(null);
+    setUpdateUserSuccess(null);
+
+    if (Object.keys(formState).length === 0) {
+      setUpdateUserError("Nenhuma alteração foi feita");
+      return;
+    }
+    if (imageFileUploading) {
+      setUpdateUserError("Aguarde o upload da imagem");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const headers = {
+        Authorization: `${token}`,
+      };
+
+      // Envie os dados do formulário junto com o cabeçalho de autorização
+      const { data } = await updateUser({
+        variables: { updateUserId: user.id, updatedUser: formState },
+        context: {
+          headers,
+        },
+      });
+
+      // Manipule a resposta conforme necessário
+      console.log("Dados atualizados:", data);
+      setUpdateUserSuccess("Perfil atualizado com sucesso!");
+    } catch (error) {
+      setUpdateUserError(error.message);
+    }
+  };
+
+  const handleDelete = async () => {
+    window.confirm("Tem certeza?");
+    try {
+      const { data } = await id({
+        variables: { deleteUserId: user.id },
+      });
+
+      logOff();
+      navigate("/");
+      window.alert(data.deleteUser.message);
+    } catch (error) {
+      console.error(error.message);
+    }
   };
 
   return (
@@ -16,13 +159,13 @@ export default function Profile() {
           type="file"
           accept="image/*"
           onChange={handleImageChange}
-          //   ref={filePickerRef}
+          ref={filePickerRef}
           hidden
         />
         {/* Preview da imagem de perfil atual ou selecionada */}
         <div
           className="relative w-32 h-32 self-center cursor-pointer shadow-md overflow-hidden rounded-full"
-          //   onClick={() => filePickerRef.current.click()}
+          onClick={() => filePickerRef.current.click()}
         >
           {/* Barra de progresso circular para exibir o progresso do upload */}
           {imageFileUploadProgress > 0 && (
@@ -48,7 +191,7 @@ export default function Profile() {
           )}
           {/* Imagem de perfil atual ou a imagem selecionada */}
           <img
-            src={imageFileUrl || currentUser.profilePicture}
+            src={imageFileUrl || user.profilePicture}
             alt="imagem do usuário"
             className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
               imageFileUploadProgress &&
@@ -58,44 +201,53 @@ export default function Profile() {
           />
         </div>
         {/* Exibe mensagem de erro de upload, se houver */}
-        {imageFileUploadError && (
-          <Alert color="failure">{imageFileUploadError}</Alert>
-        )}
+        {imageFileUploadError && <p color="failure">{imageFileUploadError}</p>}
         {/* Campos de entrada para nome de usuário, e-mail e senha */}
-        <TextInput
+        <input
           type="text"
           id="username"
           placeholder="usuário"
+          className="p-2 rounded-md pl-5"
           value={formState.username}
           onChange={handleChange}
         />
-        <TextInput
+        <input
           type="email"
           id="email"
+          className="p-2 rounded-md pl-5"
           placeholder="email"
           value={formState.email}
           onChange={handleChange}
         />
-        <TextInput
+        <input
           type="password"
           id="password"
+          className="p-2 rounded-md pl-5"
           placeholder="senha"
           onChange={handleChange}
         />
         {/* Botão para enviar o formulário de edição do perfil */}
-        <Button
-          type="submit"
-          color="dark"
-          outline
-          disabled={loading || imageFileUploading}
-        >
-          {loading ? "Carregando..." : "Alterar"}
-        </Button>
-        {currentUser.isAdmin && (
+        <div className="flex gap-5">
+          <button
+            type="submit"
+            className="bg-base_03 py-3 w-72 font-bold mx-auto text-base_02 rounded-md hover:bg-stone-700 hover:text-stone-50"
+            disabled={loading || imageFileUploading}
+          >
+            {loading ? "Carregando..." : "Alterar"}
+          </button>
+          <button
+            onClick={handleDelete}
+            className="bg-red-700 py-3 w-72  mx-auto text-red-50 rounded-md hover:bg-red-500 hover:text-stone-50"
+            disabled={loading || imageFileUploading}
+          >
+            Deletar {user.username}
+          </button>
+        </div>
+        {user.isAdmin && (
           <Link to={"/create-post"}>
-            <Button type="button" color="dark" className="w-full">
+            <button type="button" color="dark" className="w-full">
               Crie uma postagem
-            </Button>
+            </button>
           </Link>
         )}
       </form>
