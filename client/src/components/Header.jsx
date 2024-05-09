@@ -6,7 +6,7 @@ import {
   MdMenu,
   MdLogout,
   MdAdminPanelSettings,
-  MdAutoStories,
+  MdOutlineAssignment,
   MdLightbulbOutline,
   MdOutlineDashboard,
   MdPermIdentity,
@@ -134,7 +134,7 @@ export default function Header() {
                   to="/about"
                   className="hover:underline flex justify-between"
                 >
-                  Sobre <MdAutoStories className="text-2xl" />
+                  Sobre <MdOutlineAssignment  className="text-2xl" />
                 </Link>
               </li>
               <hr />

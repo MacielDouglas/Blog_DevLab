@@ -15,8 +15,9 @@ import { DELETE_USER, UPDATE_USER } from "../graphql/mutation/user.mutation";
 
 export default function Profile() {
   const { user, logOff } = useAuth();
-  const [updateUser, { loading, data }] = useMutation(UPDATE_USER);
+  const [updateUser, { loading }] = useMutation(UPDATE_USER);
   const [id] = useMutation(DELETE_USER);
+  const [showModal, setShowModal] = useState(false);
 
   const [formState, setFormState] = useState({
     username: user.username,
@@ -33,7 +34,7 @@ export default function Profile() {
   // Estados para mensagens de sucesso e erro durante a atualização do usuário e modal
   const [updateUserSuccess, setUpdateUserSuccess] = useState(null);
   const [updateUserError, setUpdateUserError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  // const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   const filePickerRef = useRef();
@@ -135,7 +136,8 @@ export default function Profile() {
   };
 
   const handleDelete = async () => {
-    window.confirm("Tem certeza?");
+    setShowModal(false);
+    // window.confirm("Tem certeza?");
     try {
       const { data } = await id({
         variables: { deleteUserId: user.id },
@@ -143,11 +145,16 @@ export default function Profile() {
 
       logOff();
       navigate("/");
+      // setShowModal(true);
       window.alert(data.deleteUser.message);
     } catch (error) {
       console.error(error.message);
     }
   };
+
+  // const toggleModal = () => {
+  //   setIsModalOpen(!isModalOpen);
+  // };
 
   return (
     <div className="max-w-lg mx-auto p-3 w-full">
@@ -227,21 +234,28 @@ export default function Profile() {
           onChange={handleChange}
         />
         {/* Botão para enviar o formulário de edição do perfil */}
-        <div className="flex gap-5">
-          <button
-            type="submit"
-            className="bg-base_03 py-3 w-72 font-bold mx-auto text-base_02 rounded-md hover:bg-stone-700 hover:text-stone-50"
+        <button
+          type="submit"
+          className="bg-base_03 py-3  font-bold text-base_02 rounded-md hover:bg-stone-700 hover:text-stone-50"
+          disabled={loading || imageFileUploading}
+        >
+          {loading ? "Carregando..." : "Alterar"}
+        </button>
+        <div className="flex justify-between mt-2 font-semibold mb-10 text-red-500">
+          <p
+            onClick={() => setShowModal(true)}
+            className="cursor-pointer hover:text-red-800"
             disabled={loading || imageFileUploading}
           >
-            {loading ? "Carregando..." : "Alterar"}
-          </button>
-          <button
-            onClick={handleDelete}
-            className="bg-red-700 py-3 w-72  mx-auto text-red-50 rounded-md hover:bg-red-500 hover:text-stone-50"
+            Deletar Conta
+          </p>
+          <p
+            onClick={logOff}
+            className="cursor-pointer hover:text-red-800"
             disabled={loading || imageFileUploading}
           >
-            Deletar {user.username}
-          </button>
+            Sair
+          </p>
         </div>
         {user.isAdmin && (
           <Link to={"/create-post"}>
@@ -251,6 +265,44 @@ export default function Profile() {
           </Link>
         )}
       </form>
+
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
+          // onClick={toggleModal}
+        >
+          <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-md flex text-center flex-col justify-around">
+            <HiOutlineExclamationCircle className="h-10 sm:h-14 w-10 sm:w-14 text-gray-600 mb-2 sm:mb-4 mx-auto" />
+            {/* {!data ? (
+              <> */}
+            <h3 className="mb-3 sm:mb-5 text-base sm:text-lg text-gray-500">
+              Tem certeza de que deseja excluir sua conta?
+            </h3>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleDelete}
+                className="bg-red-500 p-2 sm:p-3 rounded-md text-red-50 flex-1"
+              >
+                Sim, excluir!
+              </button>
+              <button
+                className="bg-base_03 p-2 sm:p-3 rounded-md text-stone-100 flex-1 mt-2 sm:mt-0"
+                onClick={() => setShowModal(false)}
+              >
+                Não, cancelar!
+              </button>
+            </div>
+            {/* </>
+            ) : (
+              <>
+                <h3 className="mb-3 sm:mb-5 text-base sm:text-lg text-gray-500">
+                  O usuário {user.username} foi excluído com sucesso!!!
+                </h3>
+              </>
+            )} */}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
