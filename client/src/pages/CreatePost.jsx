@@ -9,14 +9,26 @@ import {
 } from "firebase/storage";
 import { app } from "./../firebase";
 import { useNavigate } from "react-router-dom";
+import { CircularProgressbar } from "react-circular-progressbar";
+import { useMutation } from "@apollo/client";
+import { NEW_POST } from "../graphql/mutation/post.mutation";
+import { useAuth } from "../hooks/AuthProvider";
 
 export default function CreatePost() {
+  const { user } = useAuth();
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    userId: user.id,
+    writer: user.username,
+  });
   const [publishError, setPublishError] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
+
+  const [newPost, { loading, data }] = useMutation(NEW_POST);
+  // console.log(formData);
 
   const handleUploadImage = async () => {
     try {
@@ -57,12 +69,30 @@ export default function CreatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("submetido");
+    try {
+      if (
+        !formData.title ||
+        !formData.category ||
+        !formData.content ||
+        !formData.image
+      )
+        throw new Error("Por favor, preencha todos os campos ");
+      setFormData({ ...formData, userId: user.id });
+      console.log(formData);
+      await newPost({
+        variables: {
+          newPost: formData,
+        },
+      });
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
   };
-
+  console.log(formData);
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    console.log(name);
+    setFormData({ ...formData, category: value });
   };
 
   return (
@@ -72,18 +102,18 @@ export default function CreatePost() {
       </h1>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         {/* Input para o título e seleção da categoria */}
-        <div className="flex flex-col gap-4 sm:flex-row justify-between">
+        <div className="flex flex-col gap-4  justify-between">
           <input
             type="text"
             placeholder="Titulo"
             required
             id="title"
-            className="flex-1"
+            className="rounded-lg p-3"
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
             }
           />
-          <div className="flex flex-row gap-4 flex-wrap">
+          <div className="flex flex-row gap-4 flex-wrap items-center">
             <label>
               <input
                 type="radio"
@@ -115,25 +145,26 @@ export default function CreatePost() {
               Next JS
             </label>
             <label>
-              <input
+              {/* <input
                 type="radio"
                 name="category"
                 value="custom"
                 checked={formData.category === "custom"}
                 onChange={handleChange}
-              />
+              /> */}
               Custom:
               <input
                 type="text"
                 name="customCategory"
-                value={formData.customCategory}
+                className="p-1 rounded-lg"
+                value={formData.category}
                 onChange={handleChange}
               />
             </label>
           </div>
         </div>
         {/* Input para selecionar a imagem */}
-        <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
+        <div className="flex gap-4 items-center justify-between border-4 border-stone-500 border-dotted p-3">
           <input
             type="file"
             accept="image/*"
@@ -141,7 +172,7 @@ export default function CreatePost() {
           />
           <button
             type="button"
-            color="dark"
+            className="bg-base_04 p-2 text-base_03 rounded-lg"
             size="sm"
             // outline
             onClick={handleUploadImage}
@@ -149,11 +180,10 @@ export default function CreatePost() {
           >
             {imageUploadProgress ? (
               <div className="w-16 h-16">
-                carregando
-                {/* <CircularProgressbar
+                <CircularProgressbar
                   value={imageUploadProgress}
                   text={`${imageUploadProgress || 0}%`}
-                /> */}
+                />
               </div>
             ) : (
               "Carregar imagem"
@@ -174,16 +204,22 @@ export default function CreatePost() {
         <ReactQuill
           theme="snow"
           placeholder="escreva algo..."
-          className="h-72 mb-12"
+          className="h-72 mb-12 bg-white"
           required
           onChange={(value) => {
             setFormData({ ...formData, content: value });
           }}
         />
         {/* Botão para enviar o formulário */}
-        <button type="submit" color="dark">
+        <button
+          type="submit"
+          className="bg-base_03 p-3 rounded-lg text-base_04 mx-auto w-96 hover:text-white border border-transparent hover:border-white"
+        >
           Publicar
         </button>
+        {errorMessage && (
+          <p className="text-xl font-bold text-red-700">{errorMessage}</p>
+        )}
         {/* {publishError && (
           <Alert className="mt-5" color="failure">
             {publishError}

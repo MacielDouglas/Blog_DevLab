@@ -273,8 +273,6 @@ export default function Profile() {
         >
           <div className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-md flex text-center flex-col justify-around">
             <HiOutlineExclamationCircle className="h-10 sm:h-14 w-10 sm:w-14 text-gray-600 mb-2 sm:mb-4 mx-auto" />
-            {/* {!data ? (
-              <> */}
             <h3 className="mb-3 sm:mb-5 text-base sm:text-lg text-gray-500">
               Tem certeza de que deseja excluir sua conta?
             </h3>
@@ -292,14 +290,6 @@ export default function Profile() {
                 Não, cancelar!
               </button>
             </div>
-            {/* </>
-            ) : (
-              <>
-                <h3 className="mb-3 sm:mb-5 text-base sm:text-lg text-gray-500">
-                  O usuário {user.username} foi excluído com sucesso!!!
-                </h3>
-              </>
-            )} */}
           </div>
         </div>
       )}

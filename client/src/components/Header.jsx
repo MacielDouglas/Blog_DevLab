@@ -63,8 +63,13 @@ export default function Header() {
                     className="absolute top-full right-0 bg-white shadow-md py-2 w-48 rounded-2xl "
                   >
                     <div className="px-4 py-2">
-                      <Link to="/profile" className="text-gray-600">
-                        Perfil do {user.username}
+                      <p>{user.username}</p>
+                      <hr className="border-gray-200" />
+                      <Link
+                        to="/dashboard?tab=profile"
+                        className="text-gray-600 "
+                      >
+                        Perfil
                       </Link>
                     </div>
                     <hr className="border-gray-200" />
@@ -134,7 +139,7 @@ export default function Header() {
                   to="/about"
                   className="hover:underline flex justify-between"
                 >
-                  Sobre <MdOutlineAssignment  className="text-2xl" />
+                  Sobre <MdOutlineAssignment className="text-2xl" />
                 </Link>
               </li>
               <hr />
@@ -160,10 +165,10 @@ export default function Header() {
                   <hr />
                   <li>
                     <Link
-                      to="/profile"
+                      to="/dashboard?tab=profile"
                       className="hover:underline flex justify-between hover:text-black"
                     >
-                      Perfil do {user.username}{" "}
+                      Perfil {user.username}{" "}
                       <MdPermIdentity className="text-2xl" />
                     </Link>
                     {/* <p className="text-sm text-gray-400">{user.email}</p> */}

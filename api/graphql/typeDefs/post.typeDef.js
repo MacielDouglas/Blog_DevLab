@@ -9,6 +9,7 @@ type Post {
     category: String!
     slug: String
     createdAt: String
+    writer: String!
 }
 
 type Query {
@@ -27,6 +28,7 @@ input NewPostInput {
     content: String!
     image: String!
     category: String!
+    writer: String!
 }
 
 type DeletePostResponse {

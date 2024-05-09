@@ -28,6 +28,7 @@ export const ONE_POST = gql`
       slug
       title
       userId
+      writer
     }
   }
 `;

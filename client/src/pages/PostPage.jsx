@@ -41,12 +41,15 @@ export default function PostPage() {
   if (loading) return <h1>Carregando....</h1>;
   const post = data?.getPosts[0];
 
+  console.log(post);
+
   return (
     <main className="p-3 flex flex-col max-w-5xl mx-auto min-h-screen gap-5 mb-20">
       <p className="text-gray-500 mt-2 text-base transition-all duration-400 flex  justify-between gap-2 flex-wrap">
         <span className="flex items-center gap-3">
           <IoCalendarOutline />
-          {`${formatDate(Number(post.createdAt))}`}. - escrito por
+          {`${formatDate(Number(post.createdAt))}`}. - escrito por{" "}
+          {post.writer ? post.writer : "..."}
         </span>
         <span className="italic">
           tempo de leitura {post && (post.content.length / 1000).toFixed(0)} min

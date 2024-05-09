@@ -7,12 +7,12 @@ const postResolver = {
   Query: {
     getPosts: async (_, { slug, input }) => {
       try {
-        console.log("Input", input);
         if (slug) {
           const post = await Post.findOne({ slug }).exec();
           if (!post) {
             throw new Error("Post não encontrado.");
           }
+
           return [post];
         } else if (input) {
           const { category, title } = input;
