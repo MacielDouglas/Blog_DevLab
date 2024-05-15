@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { TbCodeDots } from "react-icons/tb";
 import {
@@ -25,14 +25,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
-
-  const handleMouseEnter = () => {
-    setShowMenu(true);
-  };
-
-  const handleMouseLeave = () => {
-    setShowMenu(false);
-  };
+  const menuRef = useRef(null);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -43,7 +36,8 @@ export default function Header() {
   };
 
   const handleSearchSubmit = () => {
-    toggleModal();
+    setIsModalOpen(false);
+    setShowMenu(false);
     if (searchQuery.trim()) {
       navigate(`/search?title=${searchQuery}`);
       setSearchQuery("");
@@ -52,6 +46,24 @@ export default function Header() {
   };
 
   const isSearchPage = location.pathname === "/search";
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    } else {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showMenu]);
 
   return (
     <header className={`bg-base_01 text-base_03 w-full h-30`}>
@@ -67,8 +79,8 @@ export default function Header() {
           {user ? (
             <div className="sm:flex items-center gap-1 cursor-pointer hidden">
               <div
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                onClick={() => setShowMenu((prevShowMenu) => !prevShowMenu)}
+                ref={menuRef}
                 className="relative flex items-center gap-2"
               >
                 {user.isAdmin ? (
@@ -79,9 +91,8 @@ export default function Header() {
                 <span className="font-semibold">{user.username}</span>
                 {showMenu && (
                   <div
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                    className="absolute top-full right-0 bg-white shadow-md py-2 w-48 rounded-2xl"
+                    onClick={() => setShowMenu((prevShowMenu) => !prevShowMenu)}
+                    className="absolute top-full right-0 bg-white shadow-md py-1 mt-2 w-48 rounded-2xl"
                   >
                     <div className="px-4 py-2">
                       <p>{user.username}</p>
@@ -126,6 +137,7 @@ export default function Header() {
         <Link to="/">
           <li className="hover:text-gray-900 font-space">home</li>
         </Link>
+
         <Link to="/about">
           <li className="hover:text-gray-900 font-space">sobre</li>
         </Link>
@@ -213,7 +225,7 @@ export default function Header() {
                     onClick={logOff}
                     className="text-red-500 hover:text-red-700 w-full text-left flex justify-between"
                   >
-                    SAIR <MdLogout className="text-2xl inline-block" />
+                    Sair <MdLogout className="text-2xl inline-block" />
                   </button>
                 ) : (
                   <Link
@@ -228,7 +240,7 @@ export default function Header() {
               {!isSearchPage && (
                 <div className=" flex flex-col gap-2 text-sm mt-5">
                   <h3 className="mb-3 sm:mb-5 text-xl font-semibold text-gray-500">
-                    Pesquise por assunto...
+                    Pesquise por...
                   </h3>
 
                   <div onClick={toggleModal}>
@@ -258,12 +270,6 @@ export default function Header() {
                     >
                       <MdSearch className="text-xl mt-1 cursor-pointer hover:text-gray-900" />
                       Pesquisar!
-                    </button>
-                    <button
-                      className="bg-base_03 p-2 sm:p-3 rounded-md text-stone-100 flex-1 mt-2 sm:mt-0"
-                      onClick={toggleModal}
-                    >
-                      Não, cancelar!
                     </button>
                   </div>
                 </div>
