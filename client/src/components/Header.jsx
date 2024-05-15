@@ -168,10 +168,13 @@ export default function Header() {
           onClick={toggleModal}
         >
           <div
-            className="bg-white p-6 rounded-l-lg h-full w-2/3 flex"
+            className="bg-white p-6 rounded-l-lg h-full w-2/3 flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <ul className="flex flex-col gap-4 text-xl w-full">
+            <ul
+              className="flex flex-col gap-4 text-xl w-full "
+              onClick={() => setIsModalOpen(false)}
+            >
               <li>
                 <Link to="/" className="hover:underline flex justify-between">
                   Home <IoHomeOutline className="text-2xl" />
@@ -237,44 +240,44 @@ export default function Header() {
                 )}
               </li>
               <hr />
-              {!isSearchPage && (
-                <div className=" flex flex-col gap-2 text-sm mt-5">
-                  <h3 className="mb-3 sm:mb-5 text-xl font-semibold text-gray-500">
-                    Pesquise por...
-                  </h3>
-
-                  <div onClick={toggleModal}>
-                    <CategoryList uniqueCategories={uniqueCategories} />
-                  </div>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSearchSubmit();
-                    }}
-                  >
-                    <label htmlFor="title"></label>
-                    <input
-                      type="text"
-                      id="title"
-                      name="titulo"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Digite algo..."
-                      className="border border-gray-300 rounded-md w-full px-4 py-2 focus:outline-none focus:border-blue-500 mb-3"
-                    />
-                  </form>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      onClick={handleSearchSubmit}
-                      className="bg-blue-500 p-2 sm:p-3 rounded-md text-red-50 flex-1 flex items-center gap-2 justify-center"
-                    >
-                      <MdSearch className="text-xl mt-1 cursor-pointer hover:text-gray-900" />
-                      Pesquisar!
-                    </button>
-                  </div>
-                </div>
-              )}
             </ul>
+            {!isSearchPage && (
+              <div className=" flex flex-col gap-2 text-sm mt-5">
+                <h3 className="mb-3 sm:mb-5 text-xl font-semibold text-gray-500">
+                  Pesquise por...
+                </h3>
+
+                <div onClick={toggleModal}>
+                  <CategoryList uniqueCategories={uniqueCategories} />
+                </div>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSearchSubmit();
+                  }}
+                >
+                  <label htmlFor="title"></label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="titulo"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Digite algo..."
+                    className="border border-gray-300 rounded-md w-full px-4 py-2 focus:outline-none focus:border-blue-500 mb-3"
+                  />
+                </form>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={handleSearchSubmit}
+                    className="bg-blue-500 p-2 sm:p-3 rounded-md text-red-50 flex-1 flex items-center gap-2 justify-center"
+                  >
+                    <MdSearch className="text-xl mt-1 cursor-pointer hover:text-gray-900" />
+                    Pesquisar!
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
