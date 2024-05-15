@@ -1,7 +1,8 @@
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client";
 import { createContext, useState, useContext, useEffect } from "react";
 import { PropTypes } from "prop-types";
 import { LOGIN_USER, LOGOUT_USER } from "../graphql/queries/user.query";
+import { ALL_POSTS } from "../graphql/queries/post.query";
 
 // Criar o contexto de autenticação
 const AuthContext = createContext();
@@ -12,6 +13,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loginQuery, { loading, error, data }] = useLazyQuery(LOGIN_USER);
   const [logout] = useLazyQuery(LOGOUT_USER);
+
+  const { data: postData } = useQuery(ALL_POSTS);
+
+  const uniqueCategories = [
+    ...new Set(postData?.getPosts.map((item) => item.category)),
+  ];
 
   useEffect(() => {
     if (!loading && !error && data) {
@@ -41,7 +48,16 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, user, signIn, logOff, data, loading, error }}
+      value={{
+        isLoggedIn,
+        user,
+        signIn,
+        logOff,
+        data,
+        loading,
+        error,
+        uniqueCategories,
+      }}
     >
       {children}
     </AuthContext.Provider>

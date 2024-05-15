@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { PropTypes } from "prop-types";
 import { useState, useRef, useEffect } from "react";
-import { MdSearch, MdChevronLeft, MdChevronRight } from "react-icons/md";
+import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 export default function CategoryList({ uniqueCategories }) {
   const listRef = useRef(null);
@@ -40,7 +40,7 @@ export default function CategoryList({ uniqueCategories }) {
   };
 
   return (
-    <div className="sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-10 md:mx-auto">
+    <div className="sm:max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-10 md:mx-auto pb-3">
       <div className="flex items-baseline justify-between gap-2">
         {showLeftArrow && (
           <MdChevronLeft
@@ -50,14 +50,13 @@ export default function CategoryList({ uniqueCategories }) {
         )}
         <ul
           ref={listRef}
-          className="flex gap-7 flex-nowrap overflow-x-hidden p-2"
+          className="flex gap-4 flex-wrap overflow-x-hidden p-2"
         >
-          <MdSearch className="text-4xl" />
           {uniqueCategories?.map((cat) => (
             <li key={cat}>
               <Link
                 to={`/search?category=${cat}`}
-                className="border font-medium text-sm rounded-full border-stone-500 px-3 py-2 lowercase bg-stone-400 hover:bg-base_03 hover:text-base_02"
+                className="border p-2 text-xs font-bold border-base_03 hover:bg-base_04"
               >
                 {cat}
               </Link>

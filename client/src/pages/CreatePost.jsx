@@ -88,10 +88,9 @@ export default function CreatePost() {
       setErrorMessage(error.message);
     }
   };
-  console.log(formData);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(name);
     setFormData({ ...formData, category: value });
   };
 
