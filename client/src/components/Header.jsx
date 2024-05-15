@@ -231,7 +231,7 @@ export default function Header() {
                     Pesquise por assunto...
                   </h3>
 
-                  <div onClick={toggleModal} className="flex flex-wrap ">
+                  <div onClick={toggleModal}>
                     <CategoryList uniqueCategories={uniqueCategories} />
                   </div>
                   <form
@@ -282,7 +282,7 @@ export default function Header() {
             className="bg-white p-4 sm:p-6 rounded-lg w-full max-w-md flex text-center flex-col justify-around"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="mb-3 sm:mb-5 text-base sm:text-lg text-gray-500">
+            <h3 className="text-base sm:text-lg text-gray-500 py-3">
               Pesquise por qualquer coisa...
             </h3>
             <p>Categorias:</p>
@@ -292,37 +292,39 @@ export default function Header() {
             >
               <CategoryList uniqueCategories={uniqueCategories} />
             </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSearchSubmit();
-              }}
-            >
-              <label htmlFor="title"></label>
-              <input
-                type="text"
-                id="title"
-                name="titulo"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Digite algo..."
-                className="border border-gray-300 rounded-md w-full px-4 py-2 focus:outline-none focus:border-blue-500 mb-3"
-              />
-            </form>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleSearchSubmit}
-                className="bg-blue-500 p-2 sm:p-3 rounded-md text-red-50  hover:text-white flex-1 flex items-center gap-2 justify-center hover:bg-blue-700 border border-transparent hover:border-white"
+            <div className="py-3">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSearchSubmit();
+                }}
               >
-                <MdSearch className="text-2xl mt-1 cursor-pointer" />
-                Pesquisar!
-              </button>
-              <button
-                className="bg-base_03 hover:bg-stone-700 p-2 sm:p-3 rounded-md text-stone-100 flex-1 mt-2 sm:mt-0 border border-transparent hover:border-white"
-                onClick={() => setShowSearch(false)}
-              >
-                Não, cancelar!
-              </button>
+                <label htmlFor="title"></label>
+                <input
+                  type="text"
+                  id="title"
+                  name="titulo"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Digite algo..."
+                  className="border border-gray-300 rounded-md w-full px-4 py-2 focus:outline-none focus:border-blue-500 mb-3"
+                />
+              </form>
+              <div className="flex flex-col sm:flex-row gap-3 text-sm pt-2">
+                <button
+                  onClick={handleSearchSubmit}
+                  className="bg-blue-500 p-1 sm:p-2 rounded-md text-red-50  hover:text-white flex-1 flex items-center gap-2 justify-center hover:bg-blue-700 border border-transparent hover:border-white"
+                >
+                  <MdSearch className="text-2xl mt-1 cursor-pointer" />
+                  Pesquisar!
+                </button>
+                <button
+                  className="bg-base_03 hover:bg-stone-700 p-1 sm:p-2 rounded-md text-stone-100 flex-1 mt-2 sm:mt-0 border border-transparent hover:border-white"
+                  onClick={() => setShowSearch(false)}
+                >
+                  Não, cancelar!
+                </button>
+              </div>
             </div>
           </div>
         </div>
