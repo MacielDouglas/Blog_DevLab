@@ -15,7 +15,7 @@ import { NEW_POST } from "../graphql/mutation/post.mutation";
 import { useAuth } from "../hooks/AuthProvider";
 
 export default function CreatePost() {
-  const { user } = useAuth();
+  const { user, uniqueCategories } = useAuth();
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
@@ -28,7 +28,6 @@ export default function CreatePost() {
   const navigate = useNavigate();
 
   const [newPost, { loading, data }] = useMutation(NEW_POST);
-  // console.log(formData);
 
   const handleUploadImage = async () => {
     try {
@@ -85,9 +84,15 @@ export default function CreatePost() {
         },
       });
     } catch (error) {
-      setErrorMessage(error.message);
+      throw new Error(
+        setErrorMessage(
+          "Não foi possível enviar essa postagem: ",
+          error.message
+        )
+      );
     }
   };
+  console.log(errorMessage);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,7 +100,7 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="p-3 max-w-3xl mx-auto min-h-screen">
+    <div className="p-3 max-w-3xl mx-auto mb-10">
       <h1 className="text-center text-3xl my-7 font-semibold">
         Criando uma nova postagem.
       </h1>
@@ -113,44 +118,20 @@ export default function CreatePost() {
             }
           />
           <div className="flex flex-row gap-4 flex-wrap items-center">
+            Categoria:
+            {uniqueCategories.map((category) => (
+              <label key={category}>
+                <input
+                  type="radio"
+                  name="category"
+                  value={category}
+                  checked={formData.category === `${category}`}
+                  onChange={handleChange}
+                />
+                {category}
+              </label>
+            ))}
             <label>
-              <input
-                type="radio"
-                name="category"
-                value="javascript"
-                checked={formData.category === "javascript"}
-                onChange={handleChange}
-              />
-              JavaScript
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="category"
-                value="reactjs"
-                checked={formData.category === "reactjs"}
-                onChange={handleChange}
-              />
-              React JS
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="category"
-                value="nextjs"
-                checked={formData.category === "nextjs"}
-                onChange={handleChange}
-              />
-              Next JS
-            </label>
-            <label>
-              {/* <input
-                type="radio"
-                name="category"
-                value="custom"
-                checked={formData.category === "custom"}
-                onChange={handleChange}
-              /> */}
               Custom:
               <input
                 type="text"
@@ -203,7 +184,7 @@ export default function CreatePost() {
         <ReactQuill
           theme="snow"
           placeholder="escreva algo..."
-          className="h-72 mb-12 bg-white"
+          className="min-h-72 bg-white "
           required
           onChange={(value) => {
             setFormData({ ...formData, content: value });
@@ -212,7 +193,7 @@ export default function CreatePost() {
         {/* Botão para enviar o formulário */}
         <button
           type="submit"
-          className="bg-base_03 p-3 rounded-lg text-base_04 mx-auto w-96 hover:text-white border border-transparent hover:border-white"
+          className="bg-base_03 p-3 rounded-lg text-base_04 mx-auto w-96 hover:text-white border border-transparent hover:border-white mt-5"
         >
           Publicar
         </button>
