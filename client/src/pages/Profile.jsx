@@ -258,7 +258,7 @@ export default function Profile() {
           </p>
         </div>
         {user.isAdmin && (
-          <Link to={"/create-post"}>
+          <Link to={"/dashboard?tab=newPost"}>
             <button type="button" color="dark" className="w-full">
               Crie uma postagem
             </button>

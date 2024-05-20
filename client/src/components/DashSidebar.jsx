@@ -37,6 +37,15 @@ export default function DashSidebar() {
           </Link>
           <hr />
           <Link
+            to="/dashboard?tab=newPost"
+            className="flex justify-between items-center p-2 rounded-lg hover:bg-white"
+          >
+            <p className="text-lg flex items-center gap-1">
+              <HiDocumentText /> Nova Postagem
+            </p>
+          </Link>
+          <hr />
+          <Link
             to="/dashboard?tab=users"
             className="flex justify-between items-center p-2 rounded-lg hover:bg-white"
           >

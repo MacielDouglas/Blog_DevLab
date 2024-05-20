@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import {
@@ -13,6 +13,7 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import { useMutation } from "@apollo/client";
 import { NEW_POST } from "../graphql/mutation/post.mutation";
 import { useAuth } from "../hooks/AuthProvider";
+import { gql, useApolloClient } from "@apollo/client";
 
 export default function CreatePost() {
   const { user, uniqueCategories } = useAuth();
@@ -22,18 +23,56 @@ export default function CreatePost() {
   const [formData, setFormData] = useState({
     userId: user.id,
     writer: user.username,
+    title: "",
+    content: "",
+    image: "",
+    category: "",
   });
   const [publishError, setPublishError] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
+  const client = useApolloClient();
 
-  const [newPost, { loading, data }] = useMutation(NEW_POST);
+  // Ref para o editor ReactQuill
+  const editorRef = useRef(null);
+
+  const [newPost, { loading }] = useMutation(NEW_POST, {
+    onCompleted: (data) => {
+      console.log("DATA_NEW_POST", data);
+      const newPostRef = client.cache.writeFragment({
+        data: data.createPost,
+        fragment: gql`
+          fragment NewPost on Post {
+            id
+            title
+            content
+            image
+            category
+          }
+        `,
+      });
+      client.cache.modify({
+        fields: {
+          posts(existingPosts = []) {
+            return [...existingPosts, newPostRef];
+          },
+        },
+      });
+      navigate(
+        `/post/${data.createPost.title.replace(/\s+/g, "-").toLowerCase()}`
+      );
+    },
+    onError: (error) => {
+      setErrorMessage(
+        `Não foi possível enviar essa postagem: ${error.message}`
+      );
+    },
+  });
 
   const handleUploadImage = async () => {
     try {
       if (!file) {
-        setImageUploadError("Por favor adicione uma imagem.");
-        return;
+        throw new Error("Por favor adicione uma imagem.");
       }
       setImageUploadError(null);
       const storage = getStorage(app);
@@ -48,8 +87,7 @@ export default function CreatePost() {
           setImageUploadProgress(progress.toFixed(0));
         },
         (error) => {
-          setImageUploadError("Falha no envio da imagem.");
-          setImageUploadProgress(null);
+          throw new Error("Falha no envio da imagem: ", error.message);
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
@@ -60,9 +98,9 @@ export default function CreatePost() {
         }
       );
     } catch (error) {
-      setImageUploadError("Falha ao carregar a imagem.");
+      setImageUploadError(error.message);
       setImageUploadProgress(null);
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -74,39 +112,36 @@ export default function CreatePost() {
         !formData.category ||
         !formData.content ||
         !formData.image
-      )
-        throw new Error("Por favor, preencha todos os campos ");
+      ) {
+        throw new Error("Por favor, preencha todos os campos");
+      }
       setFormData({ ...formData, userId: user.id });
-      console.log(formData);
-      await newPost({
-        variables: {
-          newPost: formData,
-        },
-      });
+      await newPost({ variables: { newPost: formData } });
     } catch (error) {
-      throw new Error(
-        setErrorMessage(
-          "Não foi possível enviar essa postagem: ",
-          error.message
-        )
-      );
+      setPublishError(error.message);
     }
   };
-  console.log(errorMessage);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, category: value });
+  const handleChange = (content, _, source) => {
+    if (source === "user") {
+      setFormData({ ...formData, content });
+    }
   };
 
+  useEffect(() => {
+    const observer = new MutationObserver(() => {});
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  // console.log("Form.. ", formData);
   return (
     <div className="p-3 max-w-3xl mx-auto mb-10">
       <h1 className="text-center text-3xl my-7 font-semibold">
         Criando uma nova postagem.
       </h1>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        {/* Input para o título e seleção da categoria */}
-        <div className="flex flex-col gap-4  justify-between">
+        <div className="flex flex-col gap-4 justify-between">
           <input
             type="text"
             placeholder="Titulo"
@@ -126,7 +161,9 @@ export default function CreatePost() {
                   name="category"
                   value={category}
                   checked={formData.category === `${category}`}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
                 />
                 {category}
               </label>
@@ -138,12 +175,13 @@ export default function CreatePost() {
                 name="customCategory"
                 className="p-1 rounded-lg"
                 value={formData.category}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
               />
             </label>
           </div>
         </div>
-        {/* Input para selecionar a imagem */}
         <div className="flex gap-4 items-center justify-between border-4 border-stone-500 border-dotted p-3">
           <input
             type="file"
@@ -154,7 +192,6 @@ export default function CreatePost() {
             type="button"
             className="bg-base_04 p-2 text-base_03 rounded-lg"
             size="sm"
-            // outline
             onClick={handleUploadImage}
             disabled={imageUploadProgress}
           >
@@ -170,9 +207,7 @@ export default function CreatePost() {
             )}
           </button>
         </div>
-        {/* Exibe mensagem de erro de upload, se houver */}
-        {/* {imageUploadError && <Alert color="failure">{imageUploadError}</Alert>} */}
-        {/* Exibe a imagem carregada */}
+        {imageUploadError && <p className="text-red-600">{imageUploadError}</p>}
         {formData.image && (
           <img
             src={formData.image}
@@ -180,31 +215,25 @@ export default function CreatePost() {
             className="w-full h-72 object-cover"
           />
         )}
-        {/* Editor de texto para escrever o conteúdo da postagem */}
         <ReactQuill
+          ref={editorRef}
           theme="snow"
           placeholder="escreva algo..."
-          className="min-h-72 bg-white "
+          className="min-h-72 bg-white"
           required
-          onChange={(value) => {
-            setFormData({ ...formData, content: value });
-          }}
+          onChange={handleChange}
         />
-        {/* Botão para enviar o formulário */}
         <button
           type="submit"
           className="bg-base_03 p-3 rounded-lg text-base_04 mx-auto w-96 hover:text-white border border-transparent hover:border-white mt-5"
+          disabled={loading}
         >
           Publicar
         </button>
+        {publishError && <p className="text-red-600">{publishError}</p>}
         {errorMessage && (
           <p className="text-xl font-bold text-red-700">{errorMessage}</p>
         )}
-        {/* {publishError && (
-          <Alert className="mt-5" color="failure">
-            {publishError}
-          </Alert>
-        )} */}
       </form>
     </div>
   );

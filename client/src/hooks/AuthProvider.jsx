@@ -3,6 +3,7 @@ import { createContext, useState, useContext, useEffect } from "react";
 import { PropTypes } from "prop-types";
 import { LOGIN_USER, LOGOUT_USER } from "../graphql/queries/user.query";
 import { ALL_POSTS } from "../graphql/queries/post.query";
+import Cookies from "js-cookie";
 
 // Criar o contexto de autenticação
 const AuthContext = createContext();
@@ -19,16 +20,33 @@ export const AuthProvider = ({ children }) => {
   const uniqueCategories = [
     ...new Set(postData?.getPosts.map((item) => item.category)),
   ];
+  useEffect(() => {
+    const storeUserData = Cookies.get("loginUser");
+    if (storeUserData) {
+      const userData = JSON.parse(storeUserData);
+      setIsLoggedIn(true);
+      setUser({
+        username: userData.username,
+        isAdmin: userData.isAdmin,
+        profilePicture: userData.profilePicture,
+        id: userData.id,
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && !error && data) {
       setIsLoggedIn(true);
+      Cookies.set("loginUser", JSON.stringify(data.loginUser), {
+        expires: 1 / 24,
+      });
       setUser({
         username: data.loginUser.username,
         isAdmin: data.loginUser.isAdmin,
         profilePicture: data.loginUser.profilePicture,
         id: data.loginUser.id,
       });
+      console.log(error);
     }
   }, [loading, error, data]);
 
@@ -41,6 +59,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logOff = () => {
+    Cookies.remove("loginUser");
     logout();
     setIsLoggedIn(false);
     setUser(null);
