@@ -68,23 +68,32 @@ const postResolver = {
     },
 
     deletePost: async (_, { postId }, { req }) => {
-      const userId = verifyToken(req.headers.authorization).userId;
-
       try {
-        if (!userId) {
-          throw new Error(
-            "Usuário não autenticado. Faça login para continuar."
-          );
+        const authorizationHeader = req.headers.cookie;
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
         }
 
-        // Verificar se o post existe
+        const token = authorizationHeader
+          .split("access_token=")[1]
+          .split("; loginUser=")[0];
+
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
+        }
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken || !decodedToken.isAdmin) {
+          throw new Error("Você não tem permissão para excluir este post.");
+        }
+
         const post = await Post.findById(postId);
         if (!post) {
           throw new Error("Post não encontrado.");
         }
 
         // Verificar se o usuário é o proprietário do post
-        if (post.userId !== userId) {
+        if (post.userId !== decodedToken.userId) {
           throw new Error(
             "Você não tem autorização para excluir essa postagem."
           );

@@ -90,15 +90,10 @@ export default function Header() {
                 )}
                 <span className="font-semibold">{user.username}</span>
                 {showMenu && (
-                  <div
-                    // onClick={() => setShowMenu((prevShowMenu) => !prevShowMenu)}
-                    className="absolute top-full right-0 bg-white shadow-md py-1 mt-2 w-48 rounded-2xl text-center"
-                  >
+                  <div className="absolute top-full right-0 bg-white shadow-md py-1 mt-2 w-48 rounded-2xl text-center">
                     <div className="px-4 py-2 flex flex-col gap-2">
                       <p>Bem Vindo</p>
                       <hr className="border-gray-200" />
-                      {/* <p>{user.username}</p>
-                      <hr className="border-gray-200" /> */}
                       <Link
                         to="/dashboard?tab=profile"
                         className="text-gray-600 hover:font-bold hover:bg-stone-200"
@@ -113,12 +108,6 @@ export default function Header() {
                         Sair <MdLogout className="text-xl inline-block" />
                       </p>
                     </div>
-                    {/* <button
-                      onClick={logOff}
-                      className="block px-4 py-2 text-sm text-center text-red-500 hover:text-red-700 w-full hover:font-bold hover:bg-stone-200"
-                    >
-                      Sair <MdLogout className="text-xl inline-block" />
-                    </button> */}
                   </div>
                 )}
               </div>

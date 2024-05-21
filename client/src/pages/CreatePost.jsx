@@ -7,15 +7,20 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import { app } from "./../firebase";
+import { app, auth } from "./../firebase";
 import { useNavigate } from "react-router-dom";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useMutation } from "@apollo/client";
 import { NEW_POST } from "../graphql/mutation/post.mutation";
 import { useAuth } from "../hooks/AuthProvider";
 import { gql, useApolloClient } from "@apollo/client";
+// import { getAuth } from "firebase/auth";
 
 export default function CreatePost() {
+  const usuario = auth.currentUser;
+
+  console.log("usuario", usuario);
+
   const { user, uniqueCategories } = useAuth();
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
@@ -70,6 +75,7 @@ export default function CreatePost() {
   });
 
   const handleUploadImage = async () => {
+    console.log(usuario);
     try {
       if (!file) {
         throw new Error("Por favor adicione uma imagem.");
@@ -78,7 +84,16 @@ export default function CreatePost() {
       const storage = getStorage(app);
       const fileName = new Date().getTime() + "_" + file.name;
       const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      const metadata = {
+        contentType: file.type,
+        customMetadata: {
+          userId: user.id,
+        },
+      };
+      // const uploadTask = uploadBytesResumable(storageRef, file);
+      const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+      console.log("UploadTask", uploadTask);
+      console.log("para enviar: ", usuario);
       uploadTask.on(
         "state_changed",
         (snapshot) => {
@@ -87,7 +102,7 @@ export default function CreatePost() {
           setImageUploadProgress(progress.toFixed(0));
         },
         (error) => {
-          throw new Error("Falha no envio da imagem: ", error.message);
+          throw new Error("Falha no envio da imagem: " + error.message);
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
