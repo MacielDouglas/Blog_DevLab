@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/AuthProvider";
+import OAuth from "../components/OAuth";
 
 export default function Login() {
   const { signIn, isLoggedIn, loading, error } = useAuth();
@@ -91,6 +92,7 @@ export default function Login() {
                 {loading ? "Loading..." : "Entrar"}
               </button>
             </form>
+            <OAuth />
           </div>
         </div>
         {error ? (

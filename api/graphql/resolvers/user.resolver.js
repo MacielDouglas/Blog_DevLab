@@ -37,11 +37,11 @@ const userResolver = {
         });
 
         return {
-          token,
           id: user.id,
           isAdmin: user.isAdmin,
           username: user.username,
           profilePicture: user.profilePicture,
+          name: user.name,
         };
       } catch (error) {
         throw new Error(`Erro ao fazer o login: ${error.message}`);
@@ -79,11 +79,68 @@ const userResolver = {
           );
 
         const hashedPassword = await bcrypt.hash(user.password, 10);
-        const newUser = new User({ ...user, password: hashedPassword });
+        const photo =
+          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+
+        const newUser = new User({
+          ...user,
+          password: hashedPassword,
+          profilePicture: photo,
+        });
         await newUser.save();
         return newUser;
       } catch (error) {
         throw new Error(`Erro ao criar usuário: ${error.message}`);
+      }
+    },
+    loginGoogle: async (_, { user }, { res }) => {
+      const { email, displayName, profilePicture } = user;
+
+      try {
+        const existUser = await User.findOne({ email: email });
+
+        if (!existUser) {
+          const generatePassword =
+            Math.random().toString(36).slice(-8) +
+            Math.random().toString(36).slice(-8);
+
+          const hashedPassword = bcrypt.hashSync(generatePassword, 10);
+
+          const newUser = new User({
+            username:
+              displayName.toLowerCase().split(" ").join(".") +
+              Math.random().toString(9).slice(-4),
+            email,
+            name: displayName,
+            password: hashedPassword,
+            profilePicture: profilePicture,
+          });
+          await newUser.save();
+        }
+
+        const user = await User.findOne({ email: email });
+        const token = jwt.sign(
+          {
+            userId: user.id,
+            isAdmin: user.isAdmin,
+          },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: "1h",
+          }
+        );
+        res.cookie("access_token", token, {
+          httpOnly: true,
+        });
+        return {
+          id: user.id,
+          isAdmin: user.isAdmin,
+          username: user.username,
+          profilePicture: user.profilePicture,
+          name: user.name,
+        };
+      } catch (error) {
+        throw new Error(`Erro ao fazer login com Google: ${error.message}`);
       }
     },
 

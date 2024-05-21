@@ -7,12 +7,14 @@ type User {
     password: String!
     profilePicture: String!
     isAdmin: Boolean!
+    name: String
 }
 
 type Query {
     getUser(id: ID!): User
     loginUser(email: String!, password: String!): LoginResponse!
     logoutUser: LogoutResponse!
+    
 }
 
 type LoginResponse {
@@ -21,6 +23,15 @@ type LoginResponse {
     username: String!
     profilePicture: String!
     isAdmin: Boolean!
+    name: String
+}
+
+input UserGoogle {
+  displayName: String!
+  email: String!
+  profilePicture: String!
+  name: String
+
 }
 
 type LogoutResponse {
@@ -32,6 +43,7 @@ type Mutation {
     createUser(user: NewUserInput!): User
     deleteUser(id: ID!): DeleteUserResponse
     updateUser(id: ID!, updatedUser: UpdateUserInput!): UpdateUserResponse!
+    loginGoogle(user: UserGoogle!): LoginResponse!
 }
 
 input NewUserInput {

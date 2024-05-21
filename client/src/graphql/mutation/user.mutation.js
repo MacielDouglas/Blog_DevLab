@@ -31,3 +31,15 @@ export const DELETE_USER = gql`
     }
   }
 `;
+
+export const LOGIN_GOOGLE = gql`
+  mutation userGoogle($user: UserGoogle!) {
+    loginGoogle(user: $user) {
+      id
+      isAdmin
+      profilePicture
+      username
+      name
+    }
+  }
+`;
