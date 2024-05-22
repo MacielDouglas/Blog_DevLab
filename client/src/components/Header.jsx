@@ -9,10 +9,9 @@ import {
   MdOutlineAssignment,
   MdLightbulbOutline,
   MdOutlineDashboard,
-  MdPermIdentity,
   MdSearch,
 } from "react-icons/md";
-import { FaRegCircleUser } from "react-icons/fa6";
+
 import { IoHomeOutline } from "react-icons/io5";
 import { useAuth } from "../hooks/AuthProvider";
 import CategoryList from "./CategoryList";
@@ -86,9 +85,14 @@ export default function Header() {
                 {user.isAdmin ? (
                   <MdAdminPanelSettings className="text-2xl" />
                 ) : (
-                  <FaRegCircleUser className="text-2xl" />
+                  <img
+                    src={user.profilePicture}
+                    className="w-7 h-7 rounded-full border border-white"
+                    alt={`Imagem do usuário: ${user.name}`}
+                  />
+                  // <FaRegCircleUser className="text-2xl" />
                 )}
-                <span className="font-semibold">{user.username}</span>
+                <span className="font-semibold">{user.name}</span>
                 {showMenu && (
                   <div className="absolute top-full right-0 bg-white shadow-md py-1 mt-2 w-48 rounded-2xl text-center">
                     <div className="px-4 py-2 flex flex-col gap-2">
@@ -212,8 +216,13 @@ export default function Header() {
                       to="/dashboard?tab=profile"
                       className="hover:underline flex justify-between hover:text-black"
                     >
-                      Perfil {user.username}{" "}
-                      <MdPermIdentity className="text-2xl" />
+                      {/* Perfil {user.name} <MdPermIdentity className="text-2xl" /> */}
+                      Perfil de {user.name}{" "}
+                      <img
+                        src={user.profilePicture}
+                        className="w-7 h-7 rounded-full border border-white"
+                        alt={`Imagem do usuário: ${user.name}`}
+                      />
                     </Link>
                   </li>
                 </>

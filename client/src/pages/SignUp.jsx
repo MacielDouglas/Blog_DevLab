@@ -8,9 +8,10 @@ export default function SignUp() {
     username: "",
     email: "",
     password: "",
+    name: "",
   });
 
-  const [newUser, { loading, data }] = useMutation(NEW_USER);
+  const [newUser, { loading }] = useMutation(NEW_USER);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -54,6 +55,24 @@ export default function SignUp() {
 
           <div className="flex-1">
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              <div className="flex flex-col">
+                <label
+                  htmlFor="name"
+                  className="text-gray-600 font-medium text-sm"
+                >
+                  Seu nome
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Fulano Beltrano"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
               <div className="flex flex-col">
                 <label
                   htmlFor="username"

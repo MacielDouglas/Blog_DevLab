@@ -7,6 +7,7 @@ export const NEW_USER = gql`
       password
       profilePicture
       username
+      name
     }
   }
 `;

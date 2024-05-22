@@ -52,6 +52,7 @@ input NewUserInput {
     password: String!
     profilePicture: String
     isAdmin: Boolean
+    name: String
 }
 
 type DeleteUserResponse {

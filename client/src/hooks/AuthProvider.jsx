@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin: userData.isAdmin,
         profilePicture: userData.profilePicture,
         id: userData.id,
+        name: userData.name,
       });
     }
   }, []);
@@ -45,6 +46,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin: data.loginUser.isAdmin,
         profilePicture: data.loginUser.profilePicture,
         id: data.loginUser.id,
+        name: data.loginUser.name,
       });
       console.log(error);
     }

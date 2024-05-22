@@ -151,15 +151,17 @@ const userResolver = {
           throw new Error("Token de autorização não fornecido.");
         }
 
-        // const token = authorizationHeader.split(" ")[1];
-        const token = authorizationHeader.split("=")[1];
+        const token = authorizationHeader
+          .split("access_token=")[1]
+          .split("; loginUser=")[0];
+
         if (!token) {
           throw new Error("Token de autorização inválido.");
         }
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decodedToken || decodedToken.userId !== id) {
-          throw new Error("Você não tem permissão para excluir este usuário.");
+        if (!decodedToken) {
+          throw new Error("Você não tem permissão para excluir este post.");
         }
 
         const existingUser = await User.findById(id);
