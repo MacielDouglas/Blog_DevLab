@@ -1,18 +1,27 @@
 import { useMutation, useQuery } from "@apollo/client";
 import { ALL_POSTS } from "../graphql/queries/post.query";
 import { useAuth } from "../hooks/AuthProvider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DELETE_POST } from "../graphql/mutation/post.mutation";
 import AlertModal from "./AlertModal";
 import { useState } from "react";
 import { getStorage, ref, deleteObject } from "firebase/storage";
 
 export default function DashPosts() {
-  const { user } = useAuth();
+  const { user, refetchAllPosts } = useAuth();
   const { data, loading } = useQuery(ALL_POSTS);
-  const [id] = useMutation(DELETE_POST);
+  const [id] = useMutation(DELETE_POST, {
+    onCompleted: async (data) => {
+      if (data) await refetchAllPosts();
+    },
+    onError: (error) => {
+      console.error(error);
+    },
+  });
   const [showModal, setShowModal] = useState(false);
   const [postId, setPostId] = useState("");
+
+  const navigate = useNavigate();
 
   if (loading) return <h1>Carregando...</h1>;
   const posts = data.getPosts.filter((post) => post.userId === user.id);
@@ -33,10 +42,17 @@ export default function DashPosts() {
       const { data } = await id({
         variables: { postId: postId },
       });
+
+      await refetchAllPosts();
+
       console.log(data);
     } catch (error) {
       console.error(error.message);
     }
+  };
+
+  const handleUpdate = () => {
+    navigate(`/dashboard?tab=/update-post/${postId}`);
   };
 
   return (
@@ -89,7 +105,13 @@ export default function DashPosts() {
                     Delete
                   </button>
 
-                  <button className="border py-1 px-3 rounded-md text-blue-600 hover:text-white hover:bg-blue-500 ">
+                  <button
+                    // to={`/dashboard?tab=/update-post/${post.id}`}
+                    className="border py-1 px-3 rounded-md text-blue-600 hover:text-white hover:bg-blue-500 "
+                    onClick={() =>
+                      navigate(`/dashboard?tab=/update-post/${post.slug}`)
+                    }
+                  >
                     Editar
                   </button>
                 </td>

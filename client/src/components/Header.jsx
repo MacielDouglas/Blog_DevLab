@@ -94,7 +94,7 @@ export default function Header() {
                 )}
                 <span className="font-semibold">{user.name}</span>
                 {showMenu && (
-                  <div className="absolute top-full right-0 bg-white shadow-md py-1 mt-2 w-48 rounded-2xl text-center">
+                  <div className="absolute top-full right-0 bg-white shadow-md py-1 mt-5 w-48 rounded-2xl text-center">
                     <div className="px-4 py-2 flex flex-col gap-2">
                       <p>Bem Vindo</p>
                       <hr className="border-gray-200" />

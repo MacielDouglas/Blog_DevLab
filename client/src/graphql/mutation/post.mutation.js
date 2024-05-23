@@ -23,3 +23,17 @@ export const DELETE_POST = gql`
     }
   }
 `;
+
+export const UPDATE_POST = gql`
+  mutation updatePost($updatePostId: ID!, $updatedPost: UpdatePostInput!) {
+    updatePost(id: $updatePostId, updatedPost: $updatedPost) {
+      title
+      image
+      content
+      category
+      message
+      success
+      slug
+    }
+  }
+`;

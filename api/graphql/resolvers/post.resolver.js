@@ -112,23 +112,30 @@ const postResolver = {
     },
 
     updatePost: async (_, { id, updatedPost }, { req }) => {
-      const userId = verifyToken(req.headers.authorization).userId;
-
       try {
-        if (!userId) {
-          throw new Error(
-            "Usuário não autenticado. Faça login para continuar."
-          );
+        const authorizationHeader = req.headers.cookie;
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
         }
-        // Verificar se o post existe
-        console.log(id);
+
+        const token = authorizationHeader
+          .split("access_token=")[1]
+          .split("; loginUser=")[0];
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
+        }
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken || !decodedToken.isAdmin) {
+          throw new Error("Você não tem permissão para excluir este post.");
+        }
+
         const post = await Post.findById(id);
-        console.log(post);
         if (!post) {
           throw new Error("Post não encontrado.");
         }
-        // Verificar se o usuário é o proprietário do post
-        if (post.userId !== userId) {
+
+        if (decodedToken.userId !== post.userId) {
           throw new Error(
             "Você não tem autorização para alterar essa postagem."
           );
@@ -141,7 +148,7 @@ const postResolver = {
         });
 
         await post.save();
-
+        console.log(post);
         return {
           success: true,
           message: "Post atualizado com sucesso.",
@@ -150,6 +157,7 @@ const postResolver = {
           image: post.image,
           category: post.category,
           id: post.id,
+          slug: post.slug,
         };
       } catch (error) {
         throw new Error(`Erro ao atualizar postagem: ${error.message}`);

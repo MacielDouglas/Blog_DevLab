@@ -7,21 +7,16 @@ import {
   ref,
   uploadBytesResumable,
 } from "firebase/storage";
-import { app, auth } from "./../firebase";
+import { app } from "./../firebase";
 import { useNavigate } from "react-router-dom";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { useMutation } from "@apollo/client";
 import { NEW_POST } from "../graphql/mutation/post.mutation";
 import { useAuth } from "../hooks/AuthProvider";
 import { gql, useApolloClient } from "@apollo/client";
-// import { getAuth } from "firebase/auth";
 
 export default function CreatePost() {
-  const usuario = auth.currentUser;
-
-  console.log("usuario", usuario);
-
-  const { user, uniqueCategories } = useAuth();
+  const { user, uniqueCategories, refetchAllPosts } = useAuth();
   const [file, setFile] = useState(null);
   const [imageUploadProgress, setImageUploadProgress] = useState(null);
   const [imageUploadError, setImageUploadError] = useState(null);
@@ -42,30 +37,11 @@ export default function CreatePost() {
   const editorRef = useRef(null);
 
   const [newPost, { loading }] = useMutation(NEW_POST, {
-    onCompleted: (data) => {
-      console.log("DATA_NEW_POST", data);
-      const newPostRef = client.cache.writeFragment({
-        data: data.createPost,
-        fragment: gql`
-          fragment NewPost on Post {
-            id
-            title
-            content
-            image
-            category
-          }
-        `,
-      });
-      client.cache.modify({
-        fields: {
-          posts(existingPosts = []) {
-            return [...existingPosts, newPostRef];
-          },
-        },
-      });
-      navigate(
-        `/post/${data.createPost.title.replace(/\s+/g, "-").toLowerCase()}`
-      );
+    onCompleted: async (data) => {
+      if (data.createPost.slug) {
+        await refetchAllPosts();
+        navigate(`/post/${data.createPost.slug}`);
+      }
     },
     onError: (error) => {
       setErrorMessage(
@@ -75,7 +51,6 @@ export default function CreatePost() {
   });
 
   const handleUploadImage = async () => {
-    console.log(usuario);
     try {
       if (!file) {
         throw new Error("Por favor adicione uma imagem.");
@@ -92,8 +67,6 @@ export default function CreatePost() {
       };
       // const uploadTask = uploadBytesResumable(storageRef, file);
       const uploadTask = uploadBytesResumable(storageRef, file, metadata);
-      console.log("UploadTask", uploadTask);
-      console.log("para enviar: ", usuario);
       uploadTask.on(
         "state_changed",
         (snapshot) => {

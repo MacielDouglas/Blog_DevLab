@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [loginQuery, { loading, error, data }] = useLazyQuery(LOGIN_USER);
   const [logout] = useLazyQuery(LOGOUT_USER);
 
-  const { data: postData } = useQuery(ALL_POSTS);
+  const { data: postData, refetch } = useQuery(ALL_POSTS);
 
   const uniqueCategories = [
     ...new Set(postData?.getPosts.map((item) => item.category)),
@@ -67,6 +67,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const refetchAllPosts = async () => {
+    try {
+      await refetch();
+    } catch (error) {
+      console.error("Error refetching posts:", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -80,6 +88,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         uniqueCategories,
+        refetchAllPosts,
       }}
     >
       {children}
