@@ -60,7 +60,7 @@ export default function Search() {
   };
 
   return (
-    <div className="text-base_03 mx-auto max-w-6xl p-2">
+    <div className="text-base_03 mx-auto max-w-7xl p-2">
       <p className="text-end">Olá {user ? user.username : "visitante"}, </p>
       <div className="flex gap-3 flex-wrap items-center  justify-end mx-auto py-1">
         <div className="flex flex-wrap items-center">

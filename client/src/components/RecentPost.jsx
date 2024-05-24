@@ -5,12 +5,12 @@ import { PropTypes } from "prop-types";
 
 export default function RecentPost({ recentPosts }) {
   return (
-    <div className="flex flex-col lg:flex-row gap-8 pb-32">
+    <div className="flex flex-col items-center justify-center lg:flex-row gap-12 pb-32 flex-wrap">
       {recentPosts.map((post) => (
         <Link
           to={`/post/${post.slug}`}
           key={post.id}
-          className="group relative w-[380px] border border-transparent hover:border-base_01  hover:bg-stone-100 h-[350px] overflow-hidden transition-all m-3 shadow-md"
+          className="group relative w-[380px] border border-transparent hover:border-base_01  hover:bg-stone-100 h-[350px] overflow-hidden transition-all shadow-md"
         >
           {/* <Link key={post.id} className="shadow-xl"> */}
           <img

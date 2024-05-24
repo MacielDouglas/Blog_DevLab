@@ -67,10 +67,11 @@ export default function PostPage() {
         alt={post && post.title}
         className="mt-10 p-3 max-h-[500px] aspect-video w-full object-scale-down"
       />
-      <div
-        className="p-3 max-w-2xl mx-auto w-full post-content"
+      <article
+        className="p-3 max-w-2xl mx-auto w-full post-content "
         dangerouslySetInnerHTML={{ __html: post && post.content }}
-      ></div>
+      ></article>
+
       <div className="max-w-4xl mx-auto w-full mt-10">
         <CallToAction />
       </div>
