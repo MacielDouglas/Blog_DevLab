@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ONE_POST } from "../graphql/queries/post.query";
 import { IoCalendarOutline } from "react-icons/io5";
 import CallToAction from "../components/CallToAction";
+import CommentSection from "../components/CommentSection";
 
 export default function PostPage() {
   const { postSlug } = useParams();
@@ -11,6 +12,7 @@ export default function PostPage() {
       slug: postSlug,
     },
   });
+  console.log(data);
 
   const getMonthName = (month) => {
     const months = [
@@ -71,6 +73,8 @@ export default function PostPage() {
         className="p-3 max-w-2xl mx-auto w-full post-content "
         dangerouslySetInnerHTML={{ __html: post && post.content }}
       ></article>
+
+      <CommentSection />
 
       <div className="max-w-4xl mx-auto w-full mt-10">
         <CallToAction />
