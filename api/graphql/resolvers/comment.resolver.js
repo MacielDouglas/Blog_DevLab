@@ -1,5 +1,6 @@
 import Comment from "../../models/comment.models.js";
 import Post from "../../models/post.models.js";
+import jwt from "jsonwebtoken";
 
 const commentResolver = {
   Query: {

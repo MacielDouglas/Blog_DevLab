@@ -8,6 +8,7 @@ type Comment {
     likes: [String!]
     numberOfLikes: Int
     post:Post!
+    createdAt: String
 }
 
 type Query {

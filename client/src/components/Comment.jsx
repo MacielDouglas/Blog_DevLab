@@ -1,5 +1,151 @@
-import React from "react";
+import { useQuery } from "@apollo/client";
+import { ONE_USER } from "../graphql/queries/user.query";
+import { useState } from "react";
+import { FaThumbsUp } from "react-icons/fa";
+import { IoCalendarOutline } from "react-icons/io5";
+import { PropTypes } from "prop-types";
 
-export default function Comment() {
-  return <div>Comment</div>;
+export default function Comment({
+  comment,
+  onLike,
+  onEdit,
+  onDelete,
+  userLog,
+}) {
+  const { data, loading } = useQuery(ONE_USER, {
+    variables: {
+      getUserId: comment.userId,
+    },
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState(comment.content);
+
+  if (loading) return <p>carregando...</p>;
+
+  const handleEdit = () => {
+    if (comment.userId === data.getUser.id) {
+      setIsEditing(true);
+    }
+    setEditedContent(comment.content);
+  };
+
+  const handleSave = async () => {};
+
+  const user = data.getUser;
+  return (
+    <div className="flex p-4 border-b dark:border-gray-600 text-sm">
+      <div className="flex-shrink-0 mr-3">
+        <img
+          className="w-6 h-6 rounded-full bg-gray-200"
+          src={loading ? "" : user?.profilePicture}
+          alt={loading ? "Carregando..." : user?.username}
+        />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-4 mb-1">
+          <span className="font-bold mr-1 text-xs truncate">
+            {loading
+              ? "Carregando..."
+              : user
+              ? `@${user.username.slice(0, -4)}`
+              : "Usuário anônimo"}
+          </span>
+          <p className="flex gap-1 items-center">
+            <IoCalendarOutline />
+            {`${new Date(Number(comment.createdAt)).toLocaleDateString(
+              "pt-BR",
+              {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              }
+            )}`}
+          </p>
+        </div>
+        {isEditing ? (
+          <div className="border border-base_03 p-2 rounded-md">
+            <textarea
+              className="w-full rounded-md p-3"
+              rows="3"
+              value={editedContent}
+              onChange={(e) => setEditedContent(e.target.value)}
+            />
+            <p className="text-gray-500 text-xs">
+              {200 - editedContent.length} caracteres restantes
+            </p>
+            <div className="flex justify-end gap-3 p-2">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="bg-base_03 py-1 px-3 rounded-md text-stone-200 border border-transparent hover:border-white hover:text-white "
+              >
+                Salvar
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="bg-red-700 py-1 px-3 rounded-md text-stone-200 border border-transparent hover:border-white hover:text-white "
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-gray-500 pb-2">{comment.content}</p>
+            <div className="flex items-center pt-2 text-xs border-t dark:border-gray-700 max-w-fit gap-2">
+              <button
+                type="button"
+                onClick={() => onLike(comment.id)}
+                className={`text-gray-400 hover:text-blue-500 ${
+                  user && comment.likes.includes(user.id) && "!text-blue-500"
+                }`}
+              >
+                <FaThumbsUp className="text-sm" />
+              </button>
+              <p className="text-gray-500">
+                {comment.numberOfLikes > 0 &&
+                  comment.numberOfLikes +
+                    " " +
+                    (comment.numberOfLikes === 1 ? "like" : "likes")}
+              </p>
+              {user && userLog && user.id === userLog?.id && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleEdit}
+                    className="text-blue-400 hover:text-blue-700"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(comment.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Deletar
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
+
+Comment.propTypes = {
+  comment: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    userId: PropTypes.string.isRequired,
+    createdAt: PropTypes.string.isRequired,
+    content: PropTypes.string.isRequired,
+    likes: PropTypes.arrayOf(PropTypes.string).isRequired,
+    numberOfLikes: PropTypes.number.isRequired,
+  }).isRequired,
+  onLike: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+};

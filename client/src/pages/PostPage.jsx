@@ -12,7 +12,6 @@ export default function PostPage() {
       slug: postSlug,
     },
   });
-  console.log(data);
 
   const getMonthName = (month) => {
     const months = [
@@ -74,7 +73,7 @@ export default function PostPage() {
         dangerouslySetInnerHTML={{ __html: post && post.content }}
       ></article>
 
-      <CommentSection />
+      <CommentSection postID={post.id} />
 
       <div className="max-w-4xl mx-auto w-full mt-10">
         <CallToAction />
