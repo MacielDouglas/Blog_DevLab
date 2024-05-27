@@ -1,16 +1,21 @@
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { ONE_USER } from "../graphql/queries/user.query";
 import { useState } from "react";
 import { FaThumbsUp } from "react-icons/fa";
 import { IoCalendarOutline } from "react-icons/io5";
 import { PropTypes } from "prop-types";
+import {
+  DELETE_COMMENT,
+  UPDATE_COMMENT,
+} from "../graphql/mutation/comment.mutation";
+import AlertModal from "./AlertModal";
 
 export default function Comment({
   comment,
   onLike,
-  onEdit,
   onDelete,
   userLog,
+  refetch,
 }) {
   const { data, loading } = useQuery(ONE_USER, {
     variables: {
@@ -20,6 +25,32 @@ export default function Comment({
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(comment.content);
+  const [showModal, setShowModal] = useState(false);
+
+  const [updateComment] = useMutation(UPDATE_COMMENT, {
+    onCompleted: async (data) => {
+      console.log(data);
+      refetch();
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      throw new Error(
+        `Não foi possível alterar esse comentário: ${error.message}`
+      );
+    },
+  });
+
+  const [deleteCommentId] = useMutation(DELETE_COMMENT, {
+    onCompleted: async (data) => {
+      if (data) await refetch();
+    },
+    onError: (error) => {
+      throw new Error(
+        `Não foi possível deletar essa postagem: `,
+        error.message
+      );
+    },
+  });
 
   if (loading) return <p>carregando...</p>;
 
@@ -30,7 +61,28 @@ export default function Comment({
     setEditedContent(comment.content);
   };
 
-  const handleSave = async () => {};
+  const handleSave = async () => {
+    await updateComment({
+      variables: {
+        commentId: comment.id,
+        updatedContent: editedContent,
+      },
+    });
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { data } = await deleteCommentId({
+        variables: { deleteCommentId: comment.id },
+      });
+      console.log(data);
+    } catch (error) {
+      throw new Error(
+        `Não foi possível deletar essa postagem:, ${error.message} `
+      );
+    }
+    setShowModal(false);
+  };
 
   const user = data.getUser;
   return (
@@ -121,7 +173,7 @@ export default function Comment({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete(comment.id)}
+                    onClick={() => setShowModal(true)}
                     className="text-red-500 hover:text-red-700"
                   >
                     Deletar
@@ -132,6 +184,9 @@ export default function Comment({
           </>
         )}
       </div>
+      {showModal && (
+        <AlertModal setShowModal={setShowModal} handleDelete={handleDelete} />
+      )}
     </div>
   );
 }

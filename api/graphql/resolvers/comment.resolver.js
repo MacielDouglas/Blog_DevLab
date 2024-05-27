@@ -1,6 +1,7 @@
 import Comment from "../../models/comment.models.js";
 import Post from "../../models/post.models.js";
 import jwt from "jsonwebtoken";
+import User from "./../../models/user.model.js";
 
 const commentResolver = {
   Query: {
@@ -14,54 +15,25 @@ const commentResolver = {
     },
   },
   Mutation: {
-    createComment: async (_, { postId, content }, { userId }) => {
+    createComment: async (_, { postId, content }, { req }) => {
       try {
         // Verificar se o usuário está logado
-        if (!userId) {
-          throw new Error(
-            "Usuário não autenticado. Faça login para continuar."
-          );
+        const authorizationHeader = req.headers.cookie;
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
         }
 
-        // Verificar se o postId é válido
-        const post = await Post.findById(postId);
-        if (!post) {
-          throw new Error("ID do post inválido.");
+        const token = authorizationHeader
+          .split("access_token=")[1]
+          .split("; loginUser=")[0];
+
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
         }
 
-        // Criar um novo comentário
-        const newComment = new Comment({
-          postId,
-          userId,
-          content,
-          likes: [], // Inicialmente, nenhum like
-          numberOfLikes: 0, // Inicialmente, nenhum like
-        });
-
-        // Salvar o novo comentário no banco de dados
-        await newComment.save();
-
-        // Retornar a resposta indicando o sucesso da operação e os detalhes do novo comentário criado
-        return {
-          success: true,
-          message: "Comentário criado com sucesso.",
-          id: newComment.id,
-          postId: newComment.postId,
-          userId: newComment.userId,
-          content: newComment.content,
-        };
-      } catch (error) {
-        // Se houver algum erro durante a criação do comentário, lançar uma exceção
-        throw new Error(`Erro ao criar o comentário: ${error.message}`);
-      }
-    },
-    createComment: async (_, { postId, content }, { userId }) => {
-      try {
-        // Verificar se o usuário está logado
-        if (!userId) {
-          throw new Error(
-            "Usuário não autenticado. Faça login para continuar."
-          );
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken) {
+          throw new Error("Você não tem permissão para postar um comentário.");
         }
 
         // Verificar se o postId é válido
@@ -71,7 +43,8 @@ const commentResolver = {
         }
 
         // Verificar se o userId é válido
-        const user = await User.findById(userId);
+        const user = await User.findById(decodedToken.userId);
+
         if (!user) {
           throw new Error("ID do usuário inválido.");
         }
@@ -79,7 +52,7 @@ const commentResolver = {
         // Criar um novo comentário
         const newComment = new Comment({
           postId,
-          userId,
+          userId: user._id,
           content,
           likes: [], // Inicialmente, nenhum like
           numberOfLikes: 0, // Inicialmente, nenhum like
@@ -106,11 +79,11 @@ const commentResolver = {
     likeComment: async (_, { commentId }, { userId }) => {
       try {
         // Verificar se o usuário está autenticado
-        if (!userId) {
-          throw new Error(
-            "Usuário não autenticado. Faça login para continuar."
-          );
-        }
+        // if (!userId) {
+        //   throw new Error(
+        //     "Usuário não autenticado. Faça login para continuar."
+        //   );
+        // }
 
         // Verificar se o comentário existe
         const comment = await Comment.findById(commentId);
@@ -152,13 +125,25 @@ const commentResolver = {
         throw new Error(`Erro ao dar like no comentário: ${error.message}`);
       }
     },
-    updateComment: async (_, { commentId, updatedContent }, { userId }) => {
+    updateComment: async (_, { commentId, updatedContent }, { req }) => {
       try {
         // Verificar se o usuário está autenticado
-        if (!userId) {
-          throw new Error(
-            "Usuário não autenticado. Faça login para continuar."
-          );
+        const authorizationHeader = req.headers.cookie;
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
+        }
+
+        const token = authorizationHeader
+          .split("access_token=")[1]
+          .split("; loginUser=")[0];
+
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
+        }
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken) {
+          throw new Error("Você não tem permissão para editar esse post.");
         }
 
         // Verificar se o comentário existe
@@ -168,7 +153,7 @@ const commentResolver = {
         }
 
         // Verificar se o usuário é o autor do comentário
-        if (comment.userId !== userId) {
+        if (comment.userId !== decodedToken.userId) {
           throw new Error(
             "Você não tem permissão para editar este comentário."
           );
@@ -186,6 +171,51 @@ const commentResolver = {
         };
       } catch (error) {
         throw new Error(`Erro ao atualizar o comentário: ${error.message}`);
+      }
+    },
+
+    deleteComment: async (_, { commentId }, { req }) => {
+      try {
+        const authorizationHeader = req.headers.cookie;
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
+        }
+
+        const token = authorizationHeader
+          .split("access_token=")[1]
+          .split("; loginUser=")[0];
+
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
+        }
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken) {
+          throw new Error("Você não tem permissão para editar esse post.");
+        }
+
+        const comment = await Comment.findOne(commentId);
+
+        if (!comment) {
+          throw new Error("Comentário não encontrado.");
+        }
+
+        if (comment.userId !== decodedToken.userId) {
+          throw new Error(
+            "Você não tem autorização para deletar esse comentário."
+          );
+        }
+
+        await Comment.findOneAndDelete(commentId);
+
+        return {
+          success: true,
+          message: "Comentário deletado com sucesso!",
+        };
+      } catch (error) {
+        throw new Error(
+          `Não foi possível deletar esse comentário: ${error.message} `
+        );
       }
     },
   },
