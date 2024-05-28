@@ -17,7 +17,7 @@ import { ONE_POST } from "../graphql/queries/post.query";
 import { UPDATE_POST } from "../graphql/mutation/post.mutation";
 
 export default function UpdatePost({ postSlug }) {
-  const { user, uniqueCategories } = useAuth();
+  const { user, uniqueCategories, refetchAllPosts } = useAuth();
   const { data } = useQuery(ONE_POST, {
     variables: { slug: postSlug },
   });
@@ -51,38 +51,16 @@ export default function UpdatePost({ postSlug }) {
   const editorRef = useRef(null);
 
   const [updatePost, { loading }] = useMutation(UPDATE_POST, {
-    onCompleted: (data) => {
+    onCompleted: async (data) => {
+      if (data) {
+        await refetchAllPosts();
+      }
       navigate(`/post/${data.updatePost.slug}`);
     },
     onError: (error) => {
       setErrorMessage(
         `Não foi possível enviar essa postagem: ${error.message}`
       );
-    },
-    update: (cache, { data: { updatePost } }) => {
-      cache.modify({
-        fields: {
-          getPosts(existingPosts = []) {
-            const updatedPostRef = cache.writeFragment({
-              data: updatePost,
-              fragment: gql`
-                fragment UpdatedPost on Post {
-                  id
-                  __typename
-                  title
-                  content
-                  image
-                  category
-                  slug
-                }
-              `,
-            });
-            return existingPosts.map((post) =>
-              post.__ref === updatedPostRef.__ref ? updatedPostRef : post
-            );
-          },
-        },
-      });
     },
   });
 

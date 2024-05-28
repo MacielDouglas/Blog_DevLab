@@ -1,7 +1,25 @@
 import Comment from "../../models/comment.models.js";
 import Post from "../../models/post.models.js";
-import jwt from "jsonwebtoken";
 import User from "./../../models/user.model.js";
+import jwt from "jsonwebtoken";
+
+const verifyAuthorization = (req) => {
+  const authorizationHeader = req.headers.cookie;
+  if (!authorizationHeader) {
+    throw new Error("Token de autorização não fornecido.");
+  }
+
+  const token = authorizationHeader
+    .split("access_token=")[1]
+    .split("; loginUser=")[0];
+
+  if (!token) {
+    throw new Error("Token de autorização inválido.");
+  }
+
+  const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+  return decodedToken;
+};
 
 const commentResolver = {
   Query: {
@@ -17,51 +35,28 @@ const commentResolver = {
   Mutation: {
     createComment: async (_, { postId, content }, { req }) => {
       try {
-        // Verificar se o usuário está logado
-        const authorizationHeader = req.headers.cookie;
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
-        }
+        const decodedToken = verifyAuthorization(req);
 
-        const token = authorizationHeader
-          .split("access_token=")[1]
-          .split("; loginUser=")[0];
-
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decodedToken) {
-          throw new Error("Você não tem permissão para postar um comentário.");
-        }
-
-        // Verificar se o postId é válido
         const post = await Post.findById(postId);
         if (!post) {
           throw new Error("ID do post inválido.");
         }
 
-        // Verificar se o userId é válido
         const user = await User.findById(decodedToken.userId);
-
         if (!user) {
           throw new Error("ID do usuário inválido.");
         }
 
-        // Criar um novo comentário
         const newComment = new Comment({
           postId,
-          userId: user._id,
+          userId: decodedToken.userId,
           content,
-          likes: [], // Inicialmente, nenhum like
-          numberOfLikes: 0, // Inicialmente, nenhum like
+          likes: [],
+          numberOfLikes: 0,
         });
 
-        // Salvar o novo comentário no banco de dados
         await newComment.save();
 
-        // Retornar a resposta indicando o sucesso da operação e os detalhes do novo comentário criado
         return {
           success: true,
           message: "Comentário criado com sucesso.",
@@ -71,28 +66,13 @@ const commentResolver = {
           content: newComment.content,
         };
       } catch (error) {
-        // Se houver algum erro durante a criação do comentário, lançar uma exceção
         throw new Error(`Erro ao criar o comentário: ${error.message}`);
       }
     },
 
     likeComment: async (_, { commentId }, { req }) => {
-      console.log("Like");
       try {
-        const authorizationHeader = req.headers.cookie;
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
-        }
-
-        const token = authorizationHeader
-          .split("access_token=")[1]
-          .split("; loginUser=")[0];
-
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedToken = verifyAuthorization(req);
         if (!decodedToken) {
           throw new Error("Você não tem permissão para dar like.");
         }
@@ -102,15 +82,13 @@ const commentResolver = {
           throw new Error("Comentário não encontrado.");
         }
 
-        // Verificar se o usuário já deu like neste comentário
         const alreadyLiked = comment.likes.includes(decodedToken.userId);
 
         if (alreadyLiked) {
-          // Se o usuário já deu like, remover o like e o id do usuário dos likes
           comment.likes = comment.likes.filter(
             (like) => like !== decodedToken.userId
           );
-          comment.numberOfLikes -= 1; // Reduzir o número de likes
+          comment.numberOfLikes -= 1;
           await comment.save();
 
           return {
@@ -121,9 +99,8 @@ const commentResolver = {
             numberOfLikes: comment.numberOfLikes,
           };
         } else {
-          // Se o usuário ainda não deu like, adicionar o like e o id do usuário aos likes
           comment.likes.push(decodedToken.userId);
-          comment.numberOfLikes += 1; // Aumentar o número de likes
+          comment.numberOfLikes += 1;
           await comment.save();
 
           return {
@@ -140,39 +117,22 @@ const commentResolver = {
     },
     updateComment: async (_, { commentId, updatedContent }, { req }) => {
       try {
-        // Verificar se o usuário está autenticado
-        const authorizationHeader = req.headers.cookie;
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
-        }
-
-        const token = authorizationHeader
-          .split("access_token=")[1]
-          .split("; loginUser=")[0];
-
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedToken = verifyAuthorization(req);
         if (!decodedToken) {
           throw new Error("Você não tem permissão para editar esse post.");
         }
 
-        // Verificar se o comentário existe
         const comment = await Comment.findById(commentId);
         if (!comment) {
           throw new Error("Comentário não encontrado.");
         }
 
-        // Verificar se o usuário é o autor do comentário
         if (comment.userId !== decodedToken.userId) {
           throw new Error(
             "Você não tem permissão para editar este comentário."
           );
         }
 
-        // Atualizar o conteúdo do comentário
         comment.content = updatedContent;
         await comment.save();
 
@@ -188,27 +148,18 @@ const commentResolver = {
     },
 
     deleteComment: async (_, { commentId }, { req }) => {
+      const comments = await Comment.findById(commentId);
+      if (!comments) {
+        throw new Error("Comentário não encontrado.");
+      }
+
       try {
-        const authorizationHeader = req.headers.cookie;
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
+        const decodedToken = verifyAuthorization(req);
+        if (!decodedToken || !decodedToken.isAdmin) {
+          throw new Error("Você não tem permissão para realizar esta ação.");
         }
 
-        const token = authorizationHeader
-          .split("access_token=")[1]
-          .split("; loginUser=")[0];
-
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decodedToken) {
-          throw new Error("Você não tem permissão para editar esse post.");
-        }
-
-        const comment = await Comment.findOne(commentId);
-
+        const comment = await Comment.findById(commentId);
         if (!comment) {
           throw new Error("Comentário não encontrado.");
         }
@@ -219,7 +170,7 @@ const commentResolver = {
           );
         }
 
-        await Comment.findOneAndDelete(commentId);
+        await Comment.findByIdAndDelete(commentId);
 
         return {
           success: true,

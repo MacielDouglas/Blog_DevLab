@@ -8,6 +8,7 @@ import {
   LIKE_COMMENT,
   NEW_COMMENT,
 } from "../graphql/mutation/comment.mutation";
+
 import { PropTypes } from "prop-types";
 
 function UserSection({ user }) {

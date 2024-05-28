@@ -38,21 +38,12 @@ export default function DashPosts() {
         console.log("Imagem deletada do Storage");
       });
 
-      // Delete the post from Firestore
-      const { data } = await id({
+      await id({
         variables: { postId: postId },
       });
-
-      await refetchAllPosts();
-
-      console.log(data);
     } catch (error) {
-      console.error(error.message);
+      throw new Error(`Não foi possível deletar esse post: ${error.message}`);
     }
-  };
-
-  const handleUpdate = () => {
-    navigate(`/dashboard?tab=/update-post/${postId}`);
   };
 
   return (

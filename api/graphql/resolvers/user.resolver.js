@@ -180,7 +180,6 @@ const userResolver = {
     },
 
     updateUser: async (_, { id, updatedUser }, { req }) => {
-      console.log("iniciado");
       try {
         const authorizationHeader = req.headers.cookie;
 

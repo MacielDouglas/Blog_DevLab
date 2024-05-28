@@ -35,7 +35,7 @@ export default function Comment({ comment, onLike, userLog, refetch }) {
     },
   });
 
-  const [deleteCommentId] = useMutation(DELETE_COMMENT, {
+  const [deleteComment] = useMutation(DELETE_COMMENT, {
     onCompleted: async (data) => {
       if (data) await refetch();
     },
@@ -66,7 +66,7 @@ export default function Comment({ comment, onLike, userLog, refetch }) {
 
   const handleDelete = async () => {
     try {
-      await deleteCommentId({
+      await deleteComment({
         variables: { deleteCommentId: comment.id },
       });
     } catch (error) {

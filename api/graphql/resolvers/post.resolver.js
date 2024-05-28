@@ -1,7 +1,28 @@
 import Post from "../../models/post.models.js";
 import slugify from "slugify";
 import jwt from "jsonwebtoken";
-// import { verifyToken } from "../../utils/verifyToken.js";
+
+const verifyAuthorization = (req) => {
+  const authorizationHeader = req.headers.cookie;
+  if (!authorizationHeader) {
+    throw new Error("Token de autorização não fornecido.");
+  }
+
+  const token = authorizationHeader
+    .split("access_token=")[1]
+    .split("; loginUser=")[0];
+
+  if (!token) {
+    throw new Error("Token de autorização inválido.");
+  }
+
+  const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+  if (!decodedToken || !decodedToken.isAdmin) {
+    throw new Error("Você não tem permissão para realizar esta ação.");
+  }
+
+  return decodedToken;
+};
 
 const postResolver = {
   Query: {
@@ -12,7 +33,6 @@ const postResolver = {
           if (!post) {
             throw new Error("Post não encontrado.");
           }
-
           return [post];
         } else if (input) {
           const { category, title } = input;
@@ -37,29 +57,21 @@ const postResolver = {
 
   Mutation: {
     createPost: async (_, { newPost }, { req }) => {
-      // const userId = verifyToken(req.headers.authorization).userId;
-
       try {
-        // Verificar se o usuário está autenticado
-        // if (!userId) {
-        //   throw new Error(
-        //     "Usuário não autenticado. Faça login para continuar."
-        //   );
-        // }
-        // Verificar se o título já está em uso
+        const decodedToken = verifyAuthorization(req);
+
         const existingPost = await Post.findOne({ title: newPost.title });
         if (existingPost) {
           throw new Error("Já existe um post com este título.");
         }
-        // Criar um slug único
+
         const slug = slugify(newPost.title, { lower: true });
-        // Criar o novo post associado ao usuário
+
         const postNew = new Post({
           ...newPost,
-          // userId,
           slug: slug,
         });
-        // Salvar o novo post
+
         await postNew.save();
         return postNew;
       } catch (error) {
@@ -69,37 +81,19 @@ const postResolver = {
 
     deletePost: async (_, { postId }, { req }) => {
       try {
-        const authorizationHeader = req.headers.cookie;
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
-        }
-
-        const token = authorizationHeader
-          .split("access_token=")[1]
-          .split("; loginUser=")[0];
-
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decodedToken || !decodedToken.isAdmin) {
-          throw new Error("Você não tem permissão para excluir este post.");
-        }
+        const decodedToken = verifyAuthorization(req);
 
         const post = await Post.findById(postId);
         if (!post) {
           throw new Error("Post não encontrado.");
         }
 
-        // Verificar se o usuário é o proprietário do post
         if (post.userId !== decodedToken.userId) {
           throw new Error(
             "Você não tem autorização para excluir essa postagem."
           );
         }
 
-        // Deletar o post
         await Post.findByIdAndDelete(postId);
 
         return {
@@ -113,22 +107,7 @@ const postResolver = {
 
     updatePost: async (_, { id, updatedPost }, { req }) => {
       try {
-        const authorizationHeader = req.headers.cookie;
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
-        }
-
-        const token = authorizationHeader
-          .split("access_token=")[1]
-          .split("; loginUser=")[0];
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decodedToken || !decodedToken.isAdmin) {
-          throw new Error("Você não tem permissão para excluir este post.");
-        }
+        const decodedToken = verifyAuthorization(req);
 
         const post = await Post.findById(id);
         if (!post) {
@@ -140,6 +119,7 @@ const postResolver = {
             "Você não tem autorização para alterar essa postagem."
           );
         }
+
         const newSlug = slugify(updatedPost.title, { lower: true });
 
         Object.assign(post, {
@@ -148,7 +128,7 @@ const postResolver = {
         });
 
         await post.save();
-        console.log(post);
+
         return {
           success: true,
           message: "Post atualizado com sucesso.",

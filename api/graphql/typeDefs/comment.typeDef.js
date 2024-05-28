@@ -17,7 +17,7 @@ type Query {
 
 type Mutation {
     createComment(postId: ID!, content: String!): CreateCommentResponse!
-    deleteComment(id: ID!): DeleteCommentResponse!
+    deleteComment(commentId: ID!): DeleteCommentResponse!
     likeComment(commentId: ID!): LikeCommentResponse!
     updateComment(commentId: ID!, updatedContent: String!): UpdateCommentResponse!
 }
