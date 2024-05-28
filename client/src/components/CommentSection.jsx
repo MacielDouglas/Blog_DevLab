@@ -1,10 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/AuthProvider";
 import { useEffect, useState } from "react";
 import Comment from "./Comment";
 import { useMutation, useQuery } from "@apollo/client";
 import { ALL_COMMENTS } from "../graphql/queries/comment.query";
-import { NEW_COMMENT } from "../graphql/mutation/comment.mutation";
+import {
+  LIKE_COMMENT,
+  NEW_COMMENT,
+} from "../graphql/mutation/comment.mutation";
+import { PropTypes } from "prop-types";
 
 function UserSection({ user }) {
   return (
@@ -66,14 +70,14 @@ function CommentForm({ comment, setComment, handleSubmit, loading }) {
   );
 }
 
-function CommentsList({ comments, handleLike, handleDelete, user, refetch }) {
+function CommentsList({ comments, handleLike, user, refetch }) {
   return comments.length === 0 ? (
     <p className="text-sm my-5">Não tem comentários!</p>
   ) : (
     <>
       <div className="text-sm my-5 flex items-center gap-1">
         <p>Comentários</p>
-        <div className="border border-gray-400 py-1 px-2 rounded-sm">
+        <div className="border border-gray-400 py-1 px-2 rounded-sm bg-stone-100 font-semibold">
           <p>{comments.length}</p>
         </div>
       </div>
@@ -82,7 +86,6 @@ function CommentsList({ comments, handleLike, handleDelete, user, refetch }) {
           key={comment.id}
           comment={comment}
           onLike={handleLike}
-          onDelete={handleDelete}
           userLog={user}
           refetch={refetch}
         />
@@ -95,6 +98,8 @@ export default function CommentSection({ postID }) {
   const { user } = useAuth();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+
+  const navigate = useNavigate();
 
   const { data, loading, refetch } = useQuery(ALL_COMMENTS, {
     variables: {
@@ -115,13 +120,22 @@ export default function CommentSection({ postID }) {
     },
   });
 
+  const [likeComment] = useMutation(LIKE_COMMENT, {
+    onCompleted: async (data) => {
+      if (data) {
+        await refetch();
+      }
+    },
+    onError: (error) => {
+      throw new Error(`Não foi possível dar like: ${error.message}`);
+    },
+  });
+
   useEffect(() => {
     if (data && data !== undefined && data.allComments) {
       setComments(data.allComments);
     }
   }, [data]);
-
-  // console.log(data.allComments);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -136,15 +150,22 @@ export default function CommentSection({ postID }) {
     } catch (error) {
       throw new Error(`Erro ao submeter o comentário: ${error.message}`);
     }
-    console.log("submetido");
   };
 
-  const handleLike = (commentId) => {
-    console.log(commentId);
-    console.log("like");
+  const handleLike = async (commentId) => {
+    try {
+      if (!user) {
+        navigate("/login");
+      }
+      await likeComment({
+        variables: {
+          commentId: commentId,
+        },
+      });
+    } catch (error) {
+      throw new Error(`Erro ao dar like: ${error.message}`);
+    }
   };
-
-  const handleDelete = (commentId) => {};
 
   return (
     <section className="max-w-2xl mx-auto w-full p-3">
@@ -160,10 +181,61 @@ export default function CommentSection({ postID }) {
       <CommentsList
         comments={comments}
         handleLike={handleLike}
-        handleDelete={handleDelete}
         user={user}
         refetch={refetch}
       />
     </section>
   );
 }
+
+UserSection.propTypes = {
+  user: PropTypes.shape({
+    profilePicture: PropTypes.string.isRequired,
+    username: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
+CommentForm.propTypes = {
+  comment: PropTypes.string.isRequired,
+  setComment: PropTypes.func.isRequired,
+  handleSubmit: PropTypes.func.isRequired,
+  loading: PropTypes.bool.isRequired,
+};
+
+CommentsList.propTypes = {
+  comments: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      userId: PropTypes.string.isRequired,
+      createdAt: PropTypes.string.isRequired,
+      content: PropTypes.string.isRequired,
+      numberOfLikes: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  handleLike: PropTypes.func.isRequired,
+  refetch: PropTypes.func.isRequired,
+  user: PropTypes.shape({
+    profilePicture: PropTypes.string,
+    username: PropTypes.string,
+  }),
+};
+
+CommentSection.propTypes = {
+  postID: PropTypes.string.isRequired,
+};
+
+Comment.propTypes = {
+  comment: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    userId: PropTypes.string.isRequired,
+    createdAt: PropTypes.string.isRequired,
+    content: PropTypes.string.isRequired,
+    numberOfLikes: PropTypes.number.isRequired,
+  }).isRequired,
+  onLike: PropTypes.func.isRequired,
+  userLog: PropTypes.shape({
+    profilePicture: PropTypes.string,
+    username: PropTypes.string,
+  }),
+  refetch: PropTypes.func.isRequired,
+};

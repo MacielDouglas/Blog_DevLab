@@ -76,27 +76,40 @@ const commentResolver = {
       }
     },
 
-    likeComment: async (_, { commentId }, { userId }) => {
+    likeComment: async (_, { commentId }, { req }) => {
+      console.log("Like");
       try {
-        // Verificar se o usuário está autenticado
-        // if (!userId) {
-        //   throw new Error(
-        //     "Usuário não autenticado. Faça login para continuar."
-        //   );
-        // }
+        const authorizationHeader = req.headers.cookie;
+        if (!authorizationHeader) {
+          throw new Error("Token de autorização não fornecido.");
+        }
 
-        // Verificar se o comentário existe
+        const token = authorizationHeader
+          .split("access_token=")[1]
+          .split("; loginUser=")[0];
+
+        if (!token) {
+          throw new Error("Token de autorização inválido.");
+        }
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decodedToken) {
+          throw new Error("Você não tem permissão para dar like.");
+        }
+
         const comment = await Comment.findById(commentId);
         if (!comment) {
           throw new Error("Comentário não encontrado.");
         }
 
         // Verificar se o usuário já deu like neste comentário
-        const alreadyLiked = comment.likes.includes(userId);
+        const alreadyLiked = comment.likes.includes(decodedToken.userId);
 
         if (alreadyLiked) {
           // Se o usuário já deu like, remover o like e o id do usuário dos likes
-          comment.likes = comment.likes.filter((like) => like !== userId);
+          comment.likes = comment.likes.filter(
+            (like) => like !== decodedToken.userId
+          );
           comment.numberOfLikes -= 1; // Reduzir o número de likes
           await comment.save();
 
@@ -109,7 +122,7 @@ const commentResolver = {
           };
         } else {
           // Se o usuário ainda não deu like, adicionar o like e o id do usuário aos likes
-          comment.likes.push(userId);
+          comment.likes.push(decodedToken.userId);
           comment.numberOfLikes += 1; // Aumentar o número de likes
           await comment.save();
 

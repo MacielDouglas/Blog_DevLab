@@ -31,3 +31,15 @@ export const DELETE_COMMENT = gql`
     }
   }
 `;
+
+export const LIKE_COMMENT = gql`
+  mutation likeComment($commentId: ID!) {
+    likeComment(commentId: $commentId) {
+      id
+      liked
+      numberOfLikes
+      message
+      success
+    }
+  }
+`;

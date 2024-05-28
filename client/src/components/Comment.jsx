@@ -3,20 +3,14 @@ import { ONE_USER } from "../graphql/queries/user.query";
 import { useState } from "react";
 import { FaThumbsUp } from "react-icons/fa";
 import { IoCalendarOutline } from "react-icons/io5";
-import { PropTypes } from "prop-types";
+import PropTypes from "prop-types";
 import {
   DELETE_COMMENT,
   UPDATE_COMMENT,
 } from "../graphql/mutation/comment.mutation";
 import AlertModal from "./AlertModal";
 
-export default function Comment({
-  comment,
-  onLike,
-  onDelete,
-  userLog,
-  refetch,
-}) {
+export default function Comment({ comment, onLike, userLog, refetch }) {
   const { data, loading } = useQuery(ONE_USER, {
     variables: {
       getUserId: comment.userId,
@@ -29,9 +23,10 @@ export default function Comment({
 
   const [updateComment] = useMutation(UPDATE_COMMENT, {
     onCompleted: async (data) => {
-      console.log(data);
-      refetch();
-      setIsEditing(false);
+      if (data) {
+        refetch();
+        setIsEditing(false);
+      }
     },
     onError: (error) => {
       throw new Error(
@@ -46,8 +41,7 @@ export default function Comment({
     },
     onError: (error) => {
       throw new Error(
-        `Não foi possível deletar essa postagem: `,
-        error.message
+        `Não foi possível deletar essa postagem: ${error.message}`
       );
     },
   });
@@ -72,13 +66,12 @@ export default function Comment({
 
   const handleDelete = async () => {
     try {
-      const { data } = await deleteCommentId({
+      await deleteCommentId({
         variables: { deleteCommentId: comment.id },
       });
-      console.log(data);
     } catch (error) {
       throw new Error(
-        `Não foi possível deletar essa postagem:, ${error.message} `
+        `Não foi possível deletar essa postagem: ${error.message}`
       );
     }
     setShowModal(false);
@@ -149,14 +142,13 @@ export default function Comment({
             <div className="flex items-center pt-2 text-xs border-t dark:border-gray-700 max-w-fit gap-2">
               <button
                 type="button"
+                disabled={!userLog}
                 onClick={() => onLike(comment.id)}
-                className={`text-gray-400 hover:text-blue-500 ${
-                  user && comment.likes.includes(user.id) && "!text-blue-500"
-                }`}
+                className="text-stone-500 hover:text-blue-500 disabled:text-base_03"
               >
                 <FaThumbsUp className="text-sm" />
               </button>
-              <p className="text-gray-500">
+              <p className="text-blue-500">
                 {comment.numberOfLikes > 0 &&
                   comment.numberOfLikes +
                     " " +
@@ -197,10 +189,13 @@ Comment.propTypes = {
     userId: PropTypes.string.isRequired,
     createdAt: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
-    likes: PropTypes.arrayOf(PropTypes.string).isRequired,
     numberOfLikes: PropTypes.number.isRequired,
   }).isRequired,
   onLike: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
+  userLog: PropTypes.shape({
+    id: PropTypes.string,
+    profilePicture: PropTypes.string,
+    username: PropTypes.string,
+  }),
+  refetch: PropTypes.func.isRequired,
 };

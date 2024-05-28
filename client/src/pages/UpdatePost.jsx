@@ -30,7 +30,7 @@ export default function UpdatePost({ postSlug }) {
   });
 
   useEffect(() => {
-    if (data && data.getPosts && data.getPosts.length > 0) {
+    if (data?.getPosts?.length > 0) {
       const post = data.getPosts[0];
       setFormData({
         title: post.title,
@@ -87,10 +87,11 @@ export default function UpdatePost({ postSlug }) {
   });
 
   const handleUploadImage = async () => {
+    if (!file) {
+      setImageUploadError("Por favor adicione uma imagem.");
+      return;
+    }
     try {
-      if (!file) {
-        throw new Error("Por favor adicione uma imagem.");
-      }
       setImageUploadError(null);
       const storage = getStorage(app);
       const fileName = new Date().getTime() + "_" + file.name;
@@ -110,13 +111,15 @@ export default function UpdatePost({ postSlug }) {
           setImageUploadProgress(progress.toFixed(0));
         },
         (error) => {
-          throw new Error("Falha no envio da imagem: " + error.message);
+          setImageUploadError("Falha no envio da imagem: " + error.message);
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
             setImageUploadProgress(null);
-            setImageUploadError(null);
-            setFormData({ ...formData, image: downloadUrl });
+            setFormData((prevFormData) => ({
+              ...prevFormData,
+              image: downloadUrl,
+            }));
           });
         }
       );
@@ -129,16 +132,16 @@ export default function UpdatePost({ postSlug }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (
+      !formData.title ||
+      !formData.category ||
+      !formData.content ||
+      !formData.image
+    ) {
+      setPublishError("Por favor, preencha todos os campos");
+      return;
+    }
     try {
-      if (
-        !formData.title ||
-        !formData.category ||
-        !formData.content ||
-        !formData.image
-      ) {
-        throw new Error("Por favor, preencha todos os campos");
-      }
-
       await updatePost({
         variables: {
           updatePostId: data.getPosts[0].id,
@@ -152,20 +155,17 @@ export default function UpdatePost({ postSlug }) {
 
   const handleChange = (content, _, source) => {
     if (source === "user") {
-      setFormData({ ...formData, content });
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        content,
+      }));
     }
   };
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {});
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div className="p-3 max-w-3xl mx-auto mb-10">
       <h1 className="text-center text-3xl my-7 font-semibold">
-        Criando uma nova postagem.
+        Alterando uma postagem.
       </h1>
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4 justify-between">
@@ -174,6 +174,7 @@ export default function UpdatePost({ postSlug }) {
             placeholder="Titulo"
             required
             id="title"
+            value={formData.title}
             className="rounded-lg p-3 w-full"
             onChange={(e) =>
               setFormData({ ...formData, title: e.target.value })
@@ -246,6 +247,7 @@ export default function UpdatePost({ postSlug }) {
         <ReactQuill
           ref={editorRef}
           theme="snow"
+          value={formData.content}
           placeholder="escreva algo..."
           className="min-h-72 bg-white"
           required
