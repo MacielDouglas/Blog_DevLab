@@ -155,7 +155,7 @@ const commentResolver = {
 
       try {
         const decodedToken = verifyAuthorization(req);
-        if (!decodedToken || !decodedToken.isAdmin) {
+        if (!decodedToken) {
           throw new Error("Você não tem permissão para realizar esta ação.");
         }
 

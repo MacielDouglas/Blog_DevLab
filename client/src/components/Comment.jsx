@@ -93,7 +93,7 @@ export default function Comment({ comment, onLike, userLog, refetch }) {
             {loading
               ? "Carregando..."
               : user
-              ? `@${user.username.slice(0, -4)}`
+              ? `@${user.username}`
               : "Usuário anônimo"}
           </span>
           <p className="flex gap-1 items-center">

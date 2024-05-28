@@ -24,7 +24,7 @@ function UserSection({ user }) {
         to={"/dashboard?tag=profile"}
         className="text-xs text-cyan-600 hover:underline"
       >
-        @{user.username.slice(0, -4)}
+        @{user.username}
       </Link>
     </div>
   );

@@ -2,6 +2,24 @@ import User from "../../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+const verifyAuthorization = (req) => {
+  const authorizationHeader = req.headers.cookie;
+  if (!authorizationHeader) {
+    throw new Error("Token de autorização não fornecido.");
+  }
+
+  const token = authorizationHeader
+    .split("access_token=")[1]
+    .split("; loginUser=")[0];
+
+  if (!token) {
+    throw new Error("Token de autorização inválido.");
+  }
+
+  const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+  return decodedToken;
+};
+
 const userResolver = {
   Query: {
     getUser: async (_, { id }) => {
@@ -146,20 +164,8 @@ const userResolver = {
 
     deleteUser: async (_, { id }, { req }) => {
       try {
-        const authorizationHeader = req.headers.cookie;
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
-        }
+        const decodedToken = verifyAuthorization(req);
 
-        const token = authorizationHeader
-          .split("access_token=")[1]
-          .split("; loginUser=")[0];
-
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
         if (!decodedToken) {
           throw new Error("Você não tem permissão para excluir este post.");
         }
@@ -181,22 +187,10 @@ const userResolver = {
 
     updateUser: async (_, { id, updatedUser }, { req }) => {
       try {
-        const authorizationHeader = req.headers.cookie;
-
-        if (!authorizationHeader) {
-          throw new Error("Token de autorização não fornecido.");
-        }
-
-        const token = authorizationHeader.split("=")[1];
-        console.log("TOKENS: ", token);
-        if (!token) {
-          throw new Error("Token de autorização inválido.");
-        }
-
         const existingUser = await User.findById(id);
         if (!existingUser) throw new Error("Usuário não encontrado.");
 
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedToken = verifyAuthorization(req);
         if (!decodedToken || decodedToken.userId !== existingUser.id) {
           throw new Error("Você não tem permissão para alterar este usuário.");
         }
@@ -228,7 +222,6 @@ const userResolver = {
           userUpdate.profilePicture = existingUser.profilePicture;
         }
         const novo = await User.findByIdAndUpdate(id, userUpdate);
-        console.log("NOVO: ", novo);
 
         return {
           username: novo.username,
