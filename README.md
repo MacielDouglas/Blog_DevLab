@@ -97,5 +97,3 @@ Se você tiver alguma dúvida, sugestão ou feedback, sinta-se à vontade para e
 - **LinkedIn**: [MacielD](https://www.linkedin.com/in/douglas-maciel-4943461b0/)
 
 ---
-
-Espero que este README atenda às suas necessidades! Se precisar de mais alguma coisa, estou à disposição.
